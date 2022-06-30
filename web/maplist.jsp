@@ -19,7 +19,7 @@
         <c:forEach var="map" items="${maps}">
             <tr>
                 <td>${map.id}</td>
-                <td> <a href="ServletLoadMap?name=${map.name}?&&resolution=${map.resolution}">${map.name}</a></td>
+                <td> <a href="ServletLoadMap?name=${map.name}&&width=${map.gridWidth}&&height=${map.gridHeight}">${map.name}</a></td>
             </tr>
         </c:forEach>
     </table>

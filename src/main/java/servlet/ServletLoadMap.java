@@ -13,8 +13,17 @@ public class ServletLoadMap extends HttpServlet {
         String url = "https://0.0.0.0/gs-robot/data/map_png?map_name=";
 
         String mapName = request.getParameter("name");
-        String mapResolution = request.getParameter("resolution");
-        System.out.println(mapResolution);
+        String mapUrl = "\"http://support.agilex.ai/storage/2021/04-01/YMIT1Bmen7ruIcdXWxDRVpIWIK4krZk2Eee3RFvB.png\"";
+        String mapWidth = request.getParameter("width");
+        String mapHeight = request.getParameter("height");
+        System.out.println(mapName + " " + mapWidth + " " + mapHeight);
+
+        request.setAttribute("url", mapUrl);
+        request.setAttribute("width", mapWidth);
+        request.setAttribute("height", mapHeight);
+
+        RequestDispatcher dispatcher = request.getRequestDispatcher("map.jsp");
+        dispatcher.forward(request, response);
 
     }
 
