@@ -20,6 +20,10 @@
     <script type="text/javascript" src="https://static.robotwebtools.org/ros2djs/current/ros2d.min.js"></script>
 
     <script type="text/javascript" type="text/javascript">
+        // comment
+        // change coord of points after moving it
+        // 坐标系
+        // return 坐标点
 
         function init() {
             console.log("init...");
@@ -29,6 +33,7 @@
             var stage = new createjs.Stage(canvas);
             var bitmap = new createjs.Bitmap(image_url);
             var resolution = ${resolution};
+
             bitmap.scaleX = resolution;
             bitmap.scaleY = resolution;
 
@@ -88,9 +93,10 @@
                 lineColor: createjs.Graphics.getRGB(100, 100, 255, 1),
                 pointCallBack: pointCallBack,
                 lineCallBack: lineCallBack,
-                pointSize: 1,
-                lineSize: 0.5
+                pointSize: 0.5,
+                lineSize: 0.2
             });
+            // TODO: dynamic adjust point size and line size
 
             console.log(polygon.pointColor);
 
@@ -143,7 +149,14 @@
                             if (selectedPointIndex !== null) {
                                 var pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
-                                // TODO: change coords array
+                                coords[selectedPointIndex] = Math.round(pos.x).toString() + ", " + Math.round(pos.y+(bitmap.image.height * resolution)).toString();
+                                document.getElementById("points").innerHTML="";
+                                for (let i = 0; i < coords.length; i++) {
+                                    document.getElementById("points").innerHTML += coords[i].toString() + "<br/>";
+                                    console.log(coords[i].toString());
+                                }
+                                console.log('===');
+                                // TODO: better output
                             }
                         }
                     }
@@ -165,11 +178,11 @@
                             else if (stage.mouseInBounds === true && clickedPolygon === false) {
                                 var pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.addPoint(pos);
-                                var coord = pos.x.toString() + ", " + pos.y.toString();
+                                var coord = Math.round(pos.x).toString() + ", " + Math.round(pos.y+(bitmap.image.height * resolution)).toString();
+                                // TODO: 查看相关功能和函数的影响
                                 coords.push(coord);
 
                                 for(var i = 0; i < coords.length; i++) console.log(coords[i].toString());
-                                // document.getElementById("points").innerText = coords.toString();
                                 document.getElementById("points").innerHTML += coord.toString() + "<br/>";
                                 console.log('===');
                             }
@@ -187,7 +200,7 @@
 
             // save scene scaling
             stage.scaleX = 800 / (bitmap.image.width * resolution);
-            stage.scaleY = 800 / (bitmap.getBounds().height * resolution);
+            stage.scaleY = 800 / (bitmap.image.height * resolution);
             stage.update();
         }
 
