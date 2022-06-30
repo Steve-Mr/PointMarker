@@ -9,11 +9,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="init">
-      <change afterPath="$PROJECT_DIR$/web/map.jsp" afterDir="false" />
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="初步添加显示地图和标点功能。">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/source/LoadMapList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/source/LoadMapList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/map.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/map.jsp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/maplist.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/maplist.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -191,6 +191,7 @@
       <workItem from="1656559650191" duration="18000" />
       <workItem from="1656559675335" duration="22000" />
       <workItem from="1656559704622" duration="10645000" />
+      <workItem from="1656580675142" duration="6580000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>

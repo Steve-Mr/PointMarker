@@ -28,6 +28,11 @@
             var canvas = document.getElementById("map");
             var stage = new createjs.Stage(canvas);
             var bitmap = new createjs.Bitmap(image_url);
+            var resolution = ${resolution};
+            bitmap.scaleX = resolution;
+            bitmap.scaleY = resolution;
+
+            console.log(bitmap.image.width);
 
             var coords = new Array();
 
@@ -83,7 +88,7 @@
                 lineColor: createjs.Graphics.getRGB(100, 100, 255, 1),
                 pointCallBack: pointCallBack,
                 lineCallBack: lineCallBack,
-                pointSize: 10,
+                pointSize: 1,
                 lineSize: 0.5
             });
 
@@ -94,8 +99,6 @@
             polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
 
             // Add the polygon to the viewer
-            // stage.addChild(polygon);
-
             stage.addChild(new createjs.Shape());
             stage.addChild(polygon);
             stage.update();
@@ -140,6 +143,7 @@
                             if (selectedPointIndex !== null) {
                                 var pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
+                                // TODO: change coords array
                             }
                         }
                     }
@@ -163,12 +167,7 @@
                                 polygon.addPoint(pos);
                                 var coord = pos.x.toString() + ", " + pos.y.toString();
                                 coords.push(coord);
-                                // document.getElementById("points").innerText = pos.x;
-                                // for (var index = 0; index < polygon.pointContainer.getNumChildren(); index++) {
-                                //     var markerPoints = polygon.pointContainer.getChildAt(index);
-                                //     console.log(markerPoints.x, markerPoints.y);
-                                //     // document.getElementById("points").innerText = markerPoints.x;
-                                // }
+
                                 for(var i = 0; i < coords.length; i++) console.log(coords[i].toString());
                                 // document.getElementById("points").innerText = coords.toString();
                                 document.getElementById("points").innerHTML += coord.toString() + "<br/>";
@@ -182,11 +181,14 @@
             }
 
             registerMouseHandlers();
+            // restore to values before shifting, if occurred
             stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
             stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
-            stage.scaleX = 800 / ${width};
-            stage.scaleY = 800 / ${height};
 
+            // save scene scaling
+            stage.scaleX = 800 / (bitmap.image.width * resolution);
+            stage.scaleY = 800 / (bitmap.getBounds().height * resolution);
+            stage.update();
         }
 
     </script>

@@ -14,13 +14,10 @@ public class ServletLoadMap extends HttpServlet {
 
         String mapName = request.getParameter("name");
         String mapUrl = "\"http://support.agilex.ai/storage/2021/04-01/YMIT1Bmen7ruIcdXWxDRVpIWIK4krZk2Eee3RFvB.png\"";
-        String mapWidth = request.getParameter("width");
-        String mapHeight = request.getParameter("height");
-        System.out.println(mapName + " " + mapWidth + " " + mapHeight);
+        String resolution = request.getParameter("resolution");
 
         request.setAttribute("url", mapUrl);
-        request.setAttribute("width", mapWidth);
-        request.setAttribute("height", mapHeight);
+        request.setAttribute("resolution", resolution);
 
         RequestDispatcher dispatcher = request.getRequestDispatcher("map.jsp");
         dispatcher.forward(request, response);
