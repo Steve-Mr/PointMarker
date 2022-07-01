@@ -10,21 +10,28 @@
 <html>
 <head>
     <title>Title</title>
-    <h1>Map List</h1>
-    <table border="2" width="70%" cellpadding="2">
-        <tr>
-            <th>Id</th>
-            <th>Name</th>
-        </tr>
-        <c:forEach var="map" items="${maps}">
-            <tr>
-                <td>${map.id}</td>
-                <td> <a href="ServletLoadMap?name=${map.name}&&resolution=${map.resolution}">${map.name}</a></td>
-            </tr>
-        </c:forEach>
-    </table>
-</head>
-<body>
 
+    <script>
+        function saveMaps() {
+            <% request.getSession().setAttribute("maplist", request.getAttribute("maps"));%>
+        }
+    </script>
+
+</head>
+<body onload="saveMaps()">
+<h1>Map List</h1>
+<table border="2" width="70%" cellpadding="2">
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+    </tr>
+
+    <c:forEach var="map" items="${maps}" varStatus="loop">
+        <tr>
+            <td>${map.id}</td>
+            <td> <a href="ServletLoadMap?index=${loop.index}">${map.name}</a></td>
+        </tr>
+    </c:forEach>
+</table>
 </body>
 </html>

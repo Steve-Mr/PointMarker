@@ -66,8 +66,8 @@ public class LoadMapList {
             map.setId(i);
             map.setGridHeight(1152);
             map.setGridWidth(1344);
-            map.setOriginX((float) 3.25);
-            map.setOriginY((float) 3.2);
+            map.setOriginX((float) -10);
+            map.setOriginY((float) -10);
             map.setResolution(0.1);
             map.setName("name"+i);
             map.setPgmFileName("name");

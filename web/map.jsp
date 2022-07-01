@@ -21,9 +21,21 @@
 
     <script type="text/javascript" type="text/javascript">
         // comment
-        // change coord of points after moving it
-        // 坐标系
         // return 坐标点
+
+        class coord {
+            constructor(x, y, yaw) {
+                this.x = x;
+                this.y = y;
+                this.yaw = yaw || 0.0;
+            }
+
+            toString(){
+                return this.x.toString() + ", "
+                    + this.y.toString() + ", "
+                    + this.yaw.toString();
+            }
+        }
 
         function init() {
             console.log("init...");
@@ -33,6 +45,8 @@
             var stage = new createjs.Stage(canvas);
             var bitmap = new createjs.Bitmap(image_url);
             var resolution = ${resolution};
+            var originX = ${originX};
+            var originY = ${originY};
 
             var pointsBlock = document.getElementById("points");
 
@@ -64,8 +78,7 @@
                     if (event.nativeEvent.shiftKey === true) {
                         polygon.remPoint(index);
                         coords.splice(index, 1);
-                        rePrintCoords(pointsBlock, coords);
-                        console.log('===');
+                        printCoords(pointsBlock, coords);
                     }
                     else {
                         selectedPointIndex = index;
@@ -81,10 +94,9 @@
                         coords = []
                         for(var i = 0; i < polygon.pointContainer.getNumChildren(); i ++){
                             var pos = polygon.pointContainer.getChildAt(i);
-                            coords.push(getActualCoord(pos, bitmap, resolution));
+                            coords.push(getActualCoord(pos));
                         }
-                        rePrintCoords(pointsBlock, coords);
-                        console.log('===');
+                        printCoords(pointsBlock, coords);
                     }
                 }
                 clickedPolygon = true;
@@ -99,7 +111,6 @@
                 pointSize: bitmap.image.width * resolution * 0.01,
                 lineSize: bitmap.image.width * resolution * 0.01 * 0.5
             });
-            // TODO: dynamic adjust point size and line size
 
             console.log(polygon.pointColor);
 
@@ -152,9 +163,8 @@
                             if (selectedPointIndex !== null) {
                                 var pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
-                                coords[selectedPointIndex] = getActualCoord(pos, bitmap, resolution);
-                                rePrintCoords(pointsBlock, coords);
-                                console.log('===');
+                                coords[selectedPointIndex] = getActualCoord(pos);
+                                printCoords(pointsBlock, coords);
                                 // TODO: better output
                             }
                         }
@@ -177,13 +187,10 @@
                             else if (stage.mouseInBounds === true && clickedPolygon === false) {
                                 var pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.addPoint(pos);
-                                var coord = getActualCoord(pos, bitmap, resolution);
-                                // TODO: 查看相关功能和函数的影响
+                                var coord = getActualCoord(pos);
                                 coords.push(coord);
 
-                                for(var i = 0; i < coords.length; i++) console.log(coords[i].toString());
-                                pointsBlock.innerHTML += coord.toString() + "<br/>";
-                                console.log('===');
+                                printCoords(pointsBlock, coords);
                             }
                             clickedPolygon = false;
                         }
@@ -202,20 +209,34 @@
             stage.scaleY = 800 / (bitmap.image.height * resolution);
             stage.update();
 
-            function getActualCoord(pos, bitmap, resolution){
+            function getActualCoord(pos){
                 this.pos = pos;
-                this.bitmap = bitmap;
-                this.resolution = resolution;
-                return Math.round(this.pos.x).toString() + ", "
-                    + Math.round(this.pos.y+(this.bitmap.image.height * this.resolution)).toString();
+                // return Math.round(this.pos.x - originX).toString() + ", "
+                //     + Math.round(this.pos.y+(this.bitmap.image.height * this.resolution)-originY).toString();
+                return new coord(Math.round(this.pos.x - originX),
+                    Math.round(this.pos.y+(bitmap.image.height * resolution)-originY));
             }
 
-            function rePrintCoords(block, coords){
+            function calYaw(coords){
+                for (var index = 0; index <coords.length; index++){
+                    var coord1 = coords[index];
+                    if(index !== coords.length-1){
+                        var coord2 = coords[index+1];
+                    }else{
+                        var coord2 = coords[0];
+                    }
+                    coords[index].yaw =  Math.atan2( coord2.y - coord1.y, coord2.x - coord1.x).toFixed(2);
+                }
+            }
+
+            function printCoords(block, coords){
+                calYaw(coords);
                 block.innerHTML="";
                 for (let i = 0; i < coords.length; i++) {
                     block.innerHTML += coords[i].toString() + "<br/>";
                     console.log(coords[i].toString());
                 }
+                console.log("===");
             }
         }
 
