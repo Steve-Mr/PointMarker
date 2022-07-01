@@ -34,10 +34,10 @@
             var bitmap = new createjs.Bitmap(image_url);
             var resolution = ${resolution};
 
+            var pointsBlock = document.getElementById("points");
+
             bitmap.scaleX = resolution;
             bitmap.scaleY = resolution;
-
-            console.log(bitmap.image.width);
 
             var coords = new Array();
 
@@ -64,11 +64,7 @@
                     if (event.nativeEvent.shiftKey === true) {
                         polygon.remPoint(index);
                         coords.splice(index, 1);
-                        document.getElementById("points").innerHTML="";
-                        for (let i = 0; i < coords.length; i++) {
-                            document.getElementById("points").innerHTML += coords[i].toString() + "<br/>";
-                            console.log(coords[i].toString());
-                        }
+                        rePrintCoords(pointsBlock, coords);
                         console.log('===');
                     }
                     else {
@@ -82,6 +78,13 @@
                 if (type === 'mousedown') {
                     if (event.nativeEvent.ctrlKey === true) {
                         polygon.splitLine(index);
+                        coords = []
+                        for(var i = 0; i < polygon.pointContainer.getNumChildren(); i ++){
+                            var pos = polygon.pointContainer.getChildAt(i);
+                            coords.push(getActualCoord(pos, bitmap, resolution));
+                        }
+                        rePrintCoords(pointsBlock, coords);
+                        console.log('===');
                     }
                 }
                 clickedPolygon = true;
@@ -93,8 +96,8 @@
                 lineColor: createjs.Graphics.getRGB(100, 100, 255, 1),
                 pointCallBack: pointCallBack,
                 lineCallBack: lineCallBack,
-                pointSize: 0.5,
-                lineSize: 0.2
+                pointSize: bitmap.image.width * resolution * 0.01,
+                lineSize: bitmap.image.width * resolution * 0.01 * 0.5
             });
             // TODO: dynamic adjust point size and line size
 
@@ -149,12 +152,8 @@
                             if (selectedPointIndex !== null) {
                                 var pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
-                                coords[selectedPointIndex] = Math.round(pos.x).toString() + ", " + Math.round(pos.y+(bitmap.image.height * resolution)).toString();
-                                document.getElementById("points").innerHTML="";
-                                for (let i = 0; i < coords.length; i++) {
-                                    document.getElementById("points").innerHTML += coords[i].toString() + "<br/>";
-                                    console.log(coords[i].toString());
-                                }
+                                coords[selectedPointIndex] = getActualCoord(pos, bitmap, resolution);
+                                rePrintCoords(pointsBlock, coords);
                                 console.log('===');
                                 // TODO: better output
                             }
@@ -178,12 +177,12 @@
                             else if (stage.mouseInBounds === true && clickedPolygon === false) {
                                 var pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.addPoint(pos);
-                                var coord = Math.round(pos.x).toString() + ", " + Math.round(pos.y+(bitmap.image.height * resolution)).toString();
+                                var coord = getActualCoord(pos, bitmap, resolution);
                                 // TODO: 查看相关功能和函数的影响
                                 coords.push(coord);
 
                                 for(var i = 0; i < coords.length; i++) console.log(coords[i].toString());
-                                document.getElementById("points").innerHTML += coord.toString() + "<br/>";
+                                pointsBlock.innerHTML += coord.toString() + "<br/>";
                                 console.log('===');
                             }
                             clickedPolygon = false;
@@ -202,6 +201,22 @@
             stage.scaleX = 800 / (bitmap.image.width * resolution);
             stage.scaleY = 800 / (bitmap.image.height * resolution);
             stage.update();
+
+            function getActualCoord(pos, bitmap, resolution){
+                this.pos = pos;
+                this.bitmap = bitmap;
+                this.resolution = resolution;
+                return Math.round(this.pos.x).toString() + ", "
+                    + Math.round(this.pos.y+(this.bitmap.image.height * this.resolution)).toString();
+            }
+
+            function rePrintCoords(block, coords){
+                block.innerHTML="";
+                for (let i = 0; i < coords.length; i++) {
+                    block.innerHTML += coords[i].toString() + "<br/>";
+                    console.log(coords[i].toString());
+                }
+            }
         }
 
     </script>
