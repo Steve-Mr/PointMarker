@@ -22,7 +22,6 @@
     <script type="text/javascript" type="text/javascript">
         // comment
         // return 坐标点
-        // record type
 
         class coord {
             constructor(options) {
@@ -53,6 +52,8 @@
             var originX = ${originX};
             var originY = ${originY};
 
+            var radioPType = document.getElementsByName("ptype");
+
             var pointsBlock = document.getElementById("points");
 
             bitmap.scaleX = resolution;
@@ -64,6 +65,24 @@
             stage.addChild(bitmap);
             createjs.Ticker.framerate = 30;
             createjs.Ticker.addEventListener("tick", stage);
+
+            console.log("stage.scaleX before: " + stage.scaleX.toString() + ", stage.scaleY before: " + stage.scaleY.toString());
+
+            bitmap.image.onload = function () {
+                // restore to values before shifting, if occurred
+                stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
+                stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
+
+                console.log(bitmap.getBounds().width.toString());
+
+                // save scene scaling
+                stage.scaleX = 800 / (bitmap.image.width * resolution);
+                stage.scaleY = 800 / (bitmap.image.height * resolution);
+
+                stage.update();
+            }
+
+            console.log("stage.scaleX now: " + stage.scaleX.toString() + ", stage.scaleY now: " + stage.scaleY.toString());
 
             // Add zoom to the viewer.
             var zoomView = new ROS2D.ZoomView({
@@ -204,40 +223,11 @@
                 });
             }
 
-            registerMouseHandlers();
-
-            console.log("stage.scaleX before: " + stage.scaleX.toString() + ", stage.scaleY before: " + stage.scaleY.toString());
-
-            bitmap.image.onload = function () {
-                // restore to values before shifting, if occurred
-                stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
-                stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
-
-                console.log(bitmap.getBounds().width.toString());
-
-                // save scene scaling
-                stage.scaleX = 800 / (bitmap.image.width * resolution);
-                stage.scaleY = 800 / (bitmap.image.height * resolution);
-
-                stage.update();
-            }
-            // // restore to values before shifting, if occurred
-            // stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
-            // stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
-            //
-            // console.log(bitmap.getBounds().width.toString());
-            //
-            // // save scene scaling
-            // stage.scaleX = 800 / (bitmap.image.width * resolution);
-            // stage.scaleY = 800 / (bitmap.image.height * resolution);
-            //
-            // stage.update();
-
-            console.log("stage.scaleX now: " + stage.scaleX.toString() + ", stage.scaleY now: " + stage.scaleY.toString());
-
             function getActualCoord(pos){
                 this.pos = pos;
-                return new coord({x : Math.round(this.pos.x - originX),
+                return new coord({
+                    type: document.querySelector('input[name="ptype"]:checked').value,
+                    x : Math.round(this.pos.x - originX),
                     y : Math.round(this.pos.y+(bitmap.image.height * resolution)-originY)});
             }
 
@@ -263,6 +253,14 @@
                 }
                 console.log("===");
             }
+
+            var radios = document.querySelectorAll('input[name="ptype"]');
+            for (const radio of radios) {
+                    radio.addEventListener("change", function () {
+                        console.log("radio: " + document.querySelector('input[name="ptype"]:checked').value.toString());
+                        registerMouseHandlers();
+                    })
+            }
         }
 
     </script>
@@ -271,6 +269,28 @@
 <body onload = "init()">
 <h1>Simple Map Example</h1>
 
+<form>
+    <p>Please choose point type</p>
+    <div>
+        <input type="radio" id="type0" name="ptype" value="0">
+        <label for="type0">初始点</label>
+
+        <input type="radio" id="type1" name="ptype" value="1">
+        <label for="type1">充电点</label>
+
+        <input type="radio" id="type2" name="ptype" value="2">
+        <label for="type2">导航点</label>
+
+        <input type="radio" id="type3" name="ptype" value="3">
+        <label for="type3">RFID 点</label>
+
+        <input type="radio" id="type4" name="ptype" value="4">
+        <label for="type4">注水点</label>
+
+        <input type="radio" id="type5" name="ptype" value="5">
+        <label for="type5">排水点</label>
+    </div>
+</form>
 <canvas id="map" width="800" height="800" style="border:1px solid #f11010;"></canvas>
 <p id="points"></p>
 </body>
