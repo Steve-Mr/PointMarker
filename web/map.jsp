@@ -22,16 +22,21 @@
     <script type="text/javascript" type="text/javascript">
         // comment
         // return 坐标点
+        // record type
 
         class coord {
-            constructor(x, y, yaw) {
-                this.x = x;
-                this.y = y;
-                this.yaw = yaw || 0.0;
+            constructor(options) {
+                options = options || {}
+
+                this.type = options.type || 6;
+                this.x = options.x;
+                this.y = options.y;
+                this.yaw = options.yaw || 0.0;
             }
 
             toString(){
-                return this.x.toString() + ", "
+                return this.type.toString() + " | "
+                    + this.x.toString() + ", "
                     + this.y.toString() + ", "
                     + this.yaw.toString();
             }
@@ -200,21 +205,40 @@
             }
 
             registerMouseHandlers();
-            // restore to values before shifting, if occurred
-            stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
-            stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
 
-            // save scene scaling
-            stage.scaleX = 800 / (bitmap.image.width * resolution);
-            stage.scaleY = 800 / (bitmap.image.height * resolution);
-            stage.update();
+            console.log("stage.scaleX before: " + stage.scaleX.toString() + ", stage.scaleY before: " + stage.scaleY.toString());
+
+            bitmap.image.onload = function () {
+                // restore to values before shifting, if occurred
+                stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
+                stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
+
+                console.log(bitmap.getBounds().width.toString());
+
+                // save scene scaling
+                stage.scaleX = 800 / (bitmap.image.width * resolution);
+                stage.scaleY = 800 / (bitmap.image.height * resolution);
+
+                stage.update();
+            }
+            // // restore to values before shifting, if occurred
+            // stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
+            // stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
+            //
+            // console.log(bitmap.getBounds().width.toString());
+            //
+            // // save scene scaling
+            // stage.scaleX = 800 / (bitmap.image.width * resolution);
+            // stage.scaleY = 800 / (bitmap.image.height * resolution);
+            //
+            // stage.update();
+
+            console.log("stage.scaleX now: " + stage.scaleX.toString() + ", stage.scaleY now: " + stage.scaleY.toString());
 
             function getActualCoord(pos){
                 this.pos = pos;
-                // return Math.round(this.pos.x - originX).toString() + ", "
-                //     + Math.round(this.pos.y+(this.bitmap.image.height * this.resolution)-originY).toString();
-                return new coord(Math.round(this.pos.x - originX),
-                    Math.round(this.pos.y+(bitmap.image.height * resolution)-originY));
+                return new coord({x : Math.round(this.pos.x - originX),
+                    y : Math.round(this.pos.y+(bitmap.image.height * resolution)-originY)});
             }
 
             function calYaw(coords){
@@ -225,7 +249,8 @@
                     }else{
                         var coord2 = coords[0];
                     }
-                    coords[index].yaw =  Math.atan2( coord2.y - coord1.y, coord2.x - coord1.x).toFixed(2);
+                    coords[index].yaw =  Math.atan2(coord2.y - coord1.y, coord2.x - coord1.x).toFixed(2);
+                    console.log((coord2.y - coord1.y).toString() + ", " + (coord2.x - coord1.x).toString());
                 }
             }
 

@@ -9,12 +9,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="细节调整">
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="坐标计算考虑 originx 和 originy&#10;jsp 增加坐标类方便展示，并更改相应方法&#10;增加方向角 yaw 计算（暂定）&#10;优化 map 列表到 map 的传值过程">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/source/LoadMapList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/source/LoadMapList.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/map.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/map.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/maplist.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/maplist.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,29 +60,29 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/maary/Documents/code/system_demo&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.2&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Downloaded.Files.Path.Enabled": "false",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "/home/maary/Documents/code/system_demo",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "editor.preferences.fonts.default"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
-    <configuration name="Tomcat 9.0.58 (Ubuntu)" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" editBeforeRun="true" APPLICATION_SERVER_NAME="Tomcat 9.0.58 (Ubuntu)" ALTERNATIVE_JRE_ENABLED="true" ALTERNATIVE_JRE_PATH="11" nameIsGenerated="true">
+    <configuration name="Tomcat 9.0.58 (Ubuntu)" type="#com.intellij.j2ee.web.tomcat.TomcatRunConfigurationFactory" factoryName="Local" APPLICATION_SERVER_NAME="Tomcat 9.0.58 (Ubuntu)" ALTERNATIVE_JRE_ENABLED="false" nameIsGenerated="true">
       <option name="UPDATING_POLICY" value="restart-server" />
       <deployment>
         <artifact name="PointMarker:war exploded">
@@ -95,7 +92,7 @@
         </artifact>
       </deployment>
       <server-settings>
-        <option name="BASE_DIRECTORY_NAME" value="5d22ac39-3927-4277-8425-e0c6e903d44a" />
+        <option name="BASE_DIRECTORY_NAME" value="e2f159c4-754a-453b-97c6-68dd34d532be" />
       </server-settings>
       <predefined_log_file enabled="true" id="Tomcat" />
       <predefined_log_file enabled="true" id="Tomcat Catalina" />
@@ -103,7 +100,7 @@
       <predefined_log_file id="Tomcat Host Manager" />
       <predefined_log_file id="Tomcat Localhost Access" />
       <RunnerSettings RunnerId="Debug">
-        <option name="DEBUG_PORT" value="41459" />
+        <option name="DEBUG_PORT" value="43515" />
       </RunnerSettings>
       <ConfigurationWrapper VM_VAR="JAVA_OPTS" RunnerId="Cover">
         <option name="USE_ENV_VARIABLES" value="true" />
@@ -192,7 +189,8 @@
       <workItem from="1656559675335" duration="22000" />
       <workItem from="1656559704622" duration="10645000" />
       <workItem from="1656580675142" duration="9285000" />
-      <workItem from="1656644869435" duration="19048000" />
+      <workItem from="1656644869435" duration="21410000" />
+      <workItem from="1656724702047" duration="4608000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
@@ -215,7 +213,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656660868144</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="坐标计算考虑 originx 和 originy&#10;jsp 增加坐标类方便展示，并更改相应方法&#10;增加方向角 yaw 计算（暂定）&#10;优化 map 列表到 map 的传值过程">
+      <created>1656684762821</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1656684762821</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -242,6 +247,11 @@
     <MESSAGE value="init" />
     <MESSAGE value="调整地图缩放" />
     <MESSAGE value="细节调整" />
-    <option name="LAST_COMMIT_MESSAGE" value="细节调整" />
+    <MESSAGE value="坐标计算考虑 originx 和 originy&#10;jsp 增加坐标类方便展示，并更改相应方法&#10;增加方向角 yaw 计算（暂定）&#10;优化 map 列表到 map 的传值过程" />
+    <option name="LAST_COMMIT_MESSAGE" value="坐标计算考虑 originx 和 originy&#10;jsp 增加坐标类方便展示，并更改相应方法&#10;增加方向角 yaw 计算（暂定）&#10;优化 map 列表到 map 的传值过程" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>
