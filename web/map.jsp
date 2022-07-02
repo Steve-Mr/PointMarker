@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%--
   Created by IntelliJ IDEA.
   User: maary
@@ -27,22 +28,36 @@
             constructor(options) {
                 options = options || {}
 
+                var date = new Date();
+
                 this.type = options.type || 6;
                 this.x = options.x;
                 this.y = options.y;
                 this.yaw = options.yaw || 0.0;
+                this.name = options.name ||
+                    "Point_"+date.getFullYear().toString()
+                    +date.getDay().toString()+date.getMonth().toString()
+                    +date.getDate().toString()
+                    +date.getHours().toString()+date.getMinutes().toString()+date.getSeconds().toString()
+                    +date.getMilliseconds().toString()+ "_"
+                    + (Math.random()).toString().slice(2, 7);
             }
 
             toString(){
                 return this.type.toString() + " | "
                     + this.x.toString() + ", "
                     + this.y.toString() + ", "
-                    + this.yaw.toString();
+                    + this.yaw.toString() + ", "
+                    + this.name;
             }
         }
 
         function init() {
             console.log("init...");
+
+            // for (var i = 0; i < 100; i++){
+            //     console.log((Math.random()).toString().slice(2, 7));
+            // }
 
             var image_url = ${url};
             var canvas = document.getElementById("map");
@@ -52,7 +67,7 @@
             var originX = ${originX};
             var originY = ${originY};
 
-            var radioPType = document.getElementsByName("ptype");
+            var pTable = document.getElementById("ptable");
 
             var pointsBlock = document.getElementById("points");
 
@@ -239,27 +254,73 @@
                     }else{
                         var coord2 = coords[0];
                     }
-                    coords[index].yaw =  Math.atan2(coord2.y - coord1.y, coord2.x - coord1.x).toFixed(2);
-                    console.log((coord2.y - coord1.y).toString() + ", " + (coord2.x - coord1.x).toString());
+                    coords[index].yaw = Math.atan2(coord2.y - coord1.y, coord2.x - coord1.x).toFixed(2);
                 }
             }
 
             function printCoords(block, coords){
+                // TODO: Add different modes
                 calYaw(coords);
                 block.innerHTML="";
                 for (let i = 0; i < coords.length; i++) {
                     block.innerHTML += coords[i].toString() + "<br/>";
                     console.log(coords[i].toString());
                 }
+                var rowCount = pTable.rows.length;
+                var tr = pTable.insertRow(rowCount);
+
+                var index = coords.length - 1;
+                var cell0 = tr.insertCell(0);
+                switch (coords[index].type) {
+                    case "0":
+                        cell0.innerHTML = "初始点";
+                        break;
+                    case "1":
+                        cell0.innerHTML = "充电点";
+                        break;
+                    case "2":
+                        cell0.innerHTML = "导航点";
+                        break;
+                    case "3":
+                        cell0.innerHTML = "RFID点";
+                        break;
+                    case "4":
+                        cell0.innerHTML = "注水点";
+                        break;
+                    case "5":
+                        cell0.innerHTML = "排水点";
+                        break;
+                    default:
+                        cell0.innerHTML = "未知/错误";
+                        break;
+                }
+
+                var cell1 = tr.insertCell(1);
+                cell1.innerHTML = coords[index].x.toString() + ", " + coords[index].y.toString();
+
+                var cell2 = tr.insertCell(2);
+                cell2.innerHTML = coords[index].yaw.toString();
+
+                var cell3 = tr.insertCell(3);
+                var element = document.createElement("input");
+                element.type = "text";
+                element.name = "pnameTextbox";
+                cell3.appendChild(element);
+                element.value = coords[index].name;
                 console.log("===");
+
             }
 
             var radios = document.querySelectorAll('input[name="ptype"]');
             for (const radio of radios) {
                     radio.addEventListener("change", function () {
-                        console.log("radio: " + document.querySelector('input[name="ptype"]:checked').value.toString());
+                        stage.removeAllEventListeners();
                         registerMouseHandlers();
                     })
+            }
+            
+            function submitPointsData() {
+                
             }
         }
 
@@ -293,5 +354,25 @@
 </form>
 <canvas id="map" width="800" height="800" style="border:1px solid #f11010;"></canvas>
 <p id="points"></p>
+<table id="ptable">
+    <thead>
+        <tr>
+            <th colspan="4">已标记点</th>
+        </tr>
+        <tr>
+            <th>类型</th>
+            <th>坐标</th>
+            <th>旋转角</th>
+            <th>名字</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<button name="submitPoints">
+    提交
+</button>
+
+</button>
 </body>
 </html>

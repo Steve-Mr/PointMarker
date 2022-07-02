@@ -20,7 +20,7 @@
 </head>
 <body onload="saveMaps()">
 <h1>Map List</h1>
-<table border="2" width="70%" cellpadding="2">
+<table>
     <tr>
         <th>Id</th>
         <th>Name</th>
