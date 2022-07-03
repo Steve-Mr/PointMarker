@@ -9,9 +9,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="记录标点 type">
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="完善表格的显示">
       <change afterPath="$PROJECT_DIR$/web/test.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/map.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/map.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -194,7 +195,7 @@
       <workItem from="1656580675142" duration="9285000" />
       <workItem from="1656644869435" duration="21410000" />
       <workItem from="1656724702047" duration="22120000" />
-      <workItem from="1656813596083" duration="6539000" />
+      <workItem from="1656813596083" duration="20802000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
@@ -238,7 +239,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656744163042</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="完善表格的显示">
+      <created>1656829404784</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1656829404784</updated>
+    </task>
+    <option name="localTasksCounter" value="8" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -268,7 +276,8 @@
     <MESSAGE value="坐标计算考虑 originx 和 originy&#10;jsp 增加坐标类方便展示，并更改相应方法&#10;增加方向角 yaw 计算（暂定）&#10;优化 map 列表到 map 的传值过程" />
     <MESSAGE value="坐标格式加入 type&#10;试图解决第一次加载缩放错误问题（理论上应该解决了但需要更多测试）" />
     <MESSAGE value="记录标点 type" />
-    <option name="LAST_COMMIT_MESSAGE" value="记录标点 type" />
+    <MESSAGE value="完善表格的显示" />
+    <option name="LAST_COMMIT_MESSAGE" value="完善表格的显示" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

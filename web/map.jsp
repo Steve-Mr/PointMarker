@@ -36,9 +36,7 @@
                 this.yaw = options.yaw || 0.0;
                 this.name = options.name ||
                     "Point_"+date.getFullYear().toString()
-                    +date.getDay().toString()+date.getMonth().toString()
-                    +date.getDate().toString()
-                    +date.getHours().toString()+date.getMinutes().toString()+date.getSeconds().toString()
+                    +date.getMonth().toString() +date.getDate().toString()
                     +date.getMilliseconds().toString()+ "_"
                     + (Math.random()).toString().slice(2, 7);
             }
@@ -49,6 +47,91 @@
                     + this.y.toString() + ", "
                     + this.yaw.toString() + ", "
                     + this.name;
+            }
+
+            toJSON(){
+                // return JSON.stringify(
+                return {
+                    actions: [],
+                    gridPosition: {
+                        x: this.x,
+                        y: this.y
+                    },
+                    name: this.name
+                };
+            }
+        }
+
+        class line{
+            constructor(options) {
+                this.sPoint = options.sPoint;
+                this.ePoint = options.ePoint;
+                this.name = options.name || this.sPoint.name + "_" + this.ePoint.name;
+            }
+
+            toJSON(){
+                return {
+                    begin: this.sPoint.name,
+                    end: this.ePoint.name,
+                    name: this.name,
+                    radius: 0
+                };
+            }
+        }
+
+        class path{
+            constructor(options) {
+                this.allPoints = options.allPoints;
+                this.allLines  = options.allLines;
+                this.name = options.name || 'Path_' + new Date().getMilliseconds().toString()+ "_"
+                    + (Math.random()).toString().slice(2, 7);
+            }
+
+            toJSON(){
+                let result = {
+                    lines:[],
+                    name: this.name,
+                    points:[]
+                }
+
+                for (let i = 0; i < this.allPoints.length; i++){
+                    result.points.push(this.allPoints[i].toJSON());
+                }
+
+                for (let i = 0; i < this.allLines.length; i++){
+                    result.lines.push(
+                        {
+                            name: this.allLines[i].name
+                        }
+                    )
+                }
+
+                return result;
+            }
+        }
+
+        class pathGroup{
+            constructor(options) {
+                this.paths = options.paths;
+            }
+
+            toJSON(){
+                let result = {
+                    name: 'pathgroup_'+ new Date().getMilliseconds().toString()+ "_"
+                        + (Math.random()).toString().slice(2, 7),
+                    paths: [],
+                    type: "normal"
+                }
+
+                for (let i = 0; i < this.paths.length; i++){
+                    result.paths.push(
+                        {
+                            name: this.paths[i].name
+                        }
+                    );
+                }
+
+                return result;
             }
         }
 
@@ -74,7 +157,8 @@
             bitmap.scaleX = resolution;
             bitmap.scaleY = resolution;
 
-            var coords = new Array();
+            var coords = [];
+            var lines = [];
 
             console.log(image_url.toString());
             stage.addChild(bitmap);
@@ -83,7 +167,12 @@
 
             console.log("stage.scaleX before: " + stage.scaleX.toString() + ", stage.scaleY before: " + stage.scaleY.toString());
 
+            let bitmapW;
+            let bitmapH;
             bitmap.image.onload = function () {
+
+                bitmapW = bitmap.image.width;
+                bitmapH = bitmap.image.height;
                 // restore to values before shifting, if occurred
                 stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
                 stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
@@ -91,10 +180,15 @@
                 console.log(bitmap.getBounds().width.toString());
 
                 // save scene scaling
-                stage.scaleX = 800 / (bitmap.image.width * resolution);
-                stage.scaleY = 800 / (bitmap.image.height * resolution);
+                stage.scaleX = 800 / (bitmapW * resolution);
+                stage.scaleY = 800 / (bitmapH * resolution);
 
                 stage.update();
+
+                if (polygon!==null){
+                    polygon.pointSize = bitmapW * resolution * 0.01;
+                    polygon.lineSize = bitmapW * resolution * 0.01 * 0.5;
+                }
             }
 
             console.log("stage.scaleX now: " + stage.scaleX.toString() + ", stage.scaleY now: " + stage.scaleY.toString());
@@ -142,29 +236,14 @@
                 // clickedPolygon = true;
             }
 
-            var lineCallBack = function (type, event, index) {
-                if (type === 'mousedown') {
-                    if (event.nativeEvent.ctrlKey === true) {
-                        polygon.splitLine(index);
-                        coords = []
-                        for(var i = 0; i < polygon.pointContainer.getNumChildren(); i ++){
-                            var pos = polygon.pointContainer.getChildAt(i);
-                            coords.push(getActualCoord(pos));
-                        }
-                        printCoords(pointsBlock, coords);
-                    }
-                }
-                clickedPolygon = true;
-            }
-
             // Create the polygon
             var polygon = new ROS2D.PolygonMarker({
                 pointColor: createjs.Graphics.getRGB(255, 0, 0, 0.66),
                 lineColor: createjs.Graphics.getRGB(100, 100, 255, 1),
                 pointCallBack: pointCallBack,
                 lineCallBack: lineCallBack,
-                pointSize: bitmap.image.width * resolution * 0.01,
-                lineSize: bitmap.image.width * resolution * 0.01 * 0.5
+                pointSize: bitmapW * resolution * 0.01,
+                lineSize: bitmapW * resolution * 0.01 * 0.5
             });
 
             console.log(polygon.pointColor);
@@ -275,6 +354,47 @@
                 }
             }
 
+            function retrieveLines() {
+                var i;
+                for (i = 0; i < coords.length-1; i++){
+                    lines.push(new line({sPoint:coords[i], ePoint:coords[i+1]}));
+                }
+                lines.push(new line({sPoint:coords[i], ePoint:coords[0]}));
+            }
+
+            function generateResultJSON() {
+                let result =
+                    {
+                        points: [],
+                        lines: [],
+                        mapName: "${name}",
+                        name: new Date().getMilliseconds().toString() + (Math.random()).toString().slice(2, 7),
+                        pathGroups: [],
+                        paths: []
+                    };
+
+                for (let i = 0; i < coords.length; i++){
+                    result.points.push(coords[i].toJSON());
+                }
+
+                retrieveLines();
+
+                for (let i = 0; i < lines.length; i++){
+                    result.lines.push(lines[i].toJSON());
+                }
+
+                let path1 = new path({allPoints: coords, allLines: lines});
+                result.paths.push(path1.toJSON());
+
+                // let paths = [];
+                // paths.push(path1);
+                result.pathGroups.push(new pathGroup({paths: [path1]}).toJSON());
+
+                console.log(JSON.stringify(result));
+
+                return JSON.stringify(result);
+            }
+
             function printCoords(coords, index){
                 // TODO: Add different modes
                 calYaw(coords);
@@ -322,7 +442,6 @@
                         break;
                 }
 
-
                 cell1.innerHTML = coords[index].x.toString() + ", " + coords[index].y.toString();
 
                 cell2.innerHTML = coords[index].yaw.toString();
@@ -335,6 +454,36 @@
                 console.log("===");
             }
 
+            (function() {
+                var httpRequest;
+                document.getElementById("submitPoints").addEventListener('click', makeRequest);
+
+                function makeRequest() {
+
+                    httpRequest = new XMLHttpRequest();
+
+                    if (!httpRequest) {
+                        alert('Giving up :( Cannot create an XMLHTTP instance');
+                        return false;
+                    }
+                    httpRequest.onreadystatechange = alertContents;
+                    httpRequest.open('POST', 'https://0.0.0.0/test.html/gs-robot/cmd/generate_graph_path');
+                    httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+                    httpRequest.send(generateResultJSON());
+
+                    console.log(httpRequest);
+                }
+
+                function alertContents() {
+                    if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                        if (httpRequest.status === 200) {
+                            alert(httpRequest.responseText);
+                        } else {
+                            alert('There was a problem with the request.');
+                        }
+                    }
+                }
+            })();
 
             var radios = document.querySelectorAll('input[name="ptype"]');
             for (const radio of radios) {
@@ -344,6 +493,7 @@
                     })
             }
         }
+
 
     </script>
 
@@ -390,7 +540,7 @@
     <tbody>
     </tbody>
 </table>
-<button name="submitPoints">
+<button id="submitPoints" type="button">
     提交
 </button>
 

@@ -22,6 +22,7 @@ public class ServletLoadMap extends HttpServlet {
         Map map = maps.get(Integer.parseInt(request.getParameter("index")));
 
         request.setAttribute("url", mapUrl);
+        request.setAttribute("name", map.getName());
         request.setAttribute("resolution", map.getResolution());
         request.setAttribute("originX", map.getOriginX()*map.getResolution());
         request.setAttribute("originY", map.getOriginY()*map.getResolution());
