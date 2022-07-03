@@ -452,6 +452,27 @@
                 cell3.appendChild(element);
                 element.value = coords[index].name;
                 console.log("===");
+
+                element.addEventListener('input', updateValue);
+
+                function updateValue() {
+                    let button = document.createElement("button");
+                    button.innerText = "save";
+                    if (tr.cells.length !== 5){
+                        var cell4 = tr.insertCell(4);
+                        cell4.appendChild(button);
+                        button.addEventListener("click", makeChange);
+                    }else {
+                        var cell4 = tr.cells[4]
+                    }
+
+                    function makeChange() {
+                        console.log(element.value);
+                        coords[index].name = element.value;
+                        tr.removeChild(tr.cells[4]);
+
+                    }
+                }
             }
 
             (function() {
