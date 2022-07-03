@@ -10,9 +10,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="记录标点 type">
+      <change afterPath="$PROJECT_DIR$/web/test.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/map.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/map.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/maplist.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/maplist.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -24,6 +24,7 @@
       <list>
         <option value="Class" />
         <option value="Jsp File" />
+        <option value="HTML File" />
       </list>
     </option>
   </component>
@@ -63,6 +64,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "DefaultHtmlFileTemplate": "HTML File",
     "Downloaded.Files.Path.Enabled": "false",
     "Repository.Attach.Annotations": "false",
     "Repository.Attach.JavaDocs": "false",
@@ -192,6 +194,7 @@
       <workItem from="1656580675142" duration="9285000" />
       <workItem from="1656644869435" duration="21410000" />
       <workItem from="1656724702047" duration="22120000" />
+      <workItem from="1656813596083" duration="6539000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>

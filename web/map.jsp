@@ -117,7 +117,8 @@
                     if (event.nativeEvent.shiftKey === true) {
                         polygon.remPoint(index);
                         coords.splice(index, 1);
-                        printCoords(pointsBlock, coords);
+                        pTable.deleteRow(index+2);
+                        // printCoords(pointsBlock, coords);
                     }
                     else {
                         selectedPointIndex = index;
@@ -125,6 +126,21 @@
                 }
                 clickedPolygon = true;
             };
+
+            var lineCallBack = function (type, event, index) {
+                // if (type === 'mousedown') {
+                //     if (event.nativeEvent.ctrlKey === true) {
+                //         polygon.splitLine(index);
+                //         coords = []
+                //         for(var i = 0; i < polygon.pointContainer.getNumChildren(); i ++){
+                //             var pos = polygon.pointContainer.getChildAt(i);
+                //             coords.push(getActualCoord(pos));
+                //         }
+                //         printCoords(pointsBlock, coords);
+                //     }
+                // }
+                // clickedPolygon = true;
+            }
 
             var lineCallBack = function (type, event, index) {
                 if (type === 'mousedown') {
@@ -202,8 +218,9 @@
                             if (selectedPointIndex !== null) {
                                 var pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
-                                coords[selectedPointIndex] = getActualCoord(pos);
-                                printCoords(pointsBlock, coords);
+                                coords[selectedPointIndex].x = Math.round(pos.x - originX);
+                                coords[selectedPointIndex].y = Math.round(pos.y+(bitmap.image.height * resolution)-originY);
+                                printCoords(coords, selectedPointIndex);
                                 // TODO: better output
                             }
                         }
@@ -229,7 +246,7 @@
                                 var coord = getActualCoord(pos);
                                 coords.push(coord);
 
-                                printCoords(pointsBlock, coords);
+                                printCoords(coords, coords.length-1);
                             }
                             clickedPolygon = false;
                         }
@@ -258,19 +275,29 @@
                 }
             }
 
-            function printCoords(block, coords){
+            function printCoords(coords, index){
                 // TODO: Add different modes
                 calYaw(coords);
-                block.innerHTML="";
                 for (let i = 0; i < coords.length; i++) {
-                    block.innerHTML += coords[i].toString() + "<br/>";
                     console.log(coords[i].toString());
                 }
-                var rowCount = pTable.rows.length;
-                var tr = pTable.insertRow(rowCount);
 
-                var index = coords.length - 1;
-                var cell0 = tr.insertCell(0);
+                var tableIndex = index + 2;
+                if (tableIndex === pTable.rows.length){
+                    var tr = pTable.insertRow(tableIndex);
+                    var cell0 = tr.insertCell(0);
+                    var cell1 = tr.insertCell(1);
+                    var cell2 = tr.insertCell(2);
+                    var cell3 = tr.insertCell(3);
+                }else{
+                    var tr = pTable.rows[tableIndex];
+                    var cell0 = tr.cells[0];
+                    var cell1 = tr.cells[1];
+                    var cell2 = tr.cells[2];
+                    var cell3 = tr.cells[3];
+                    cell3.removeChild(cell3.childNodes[0]);
+                }
+
                 switch (coords[index].type) {
                     case "0":
                         cell0.innerHTML = "初始点";
@@ -295,21 +322,19 @@
                         break;
                 }
 
-                var cell1 = tr.insertCell(1);
+
                 cell1.innerHTML = coords[index].x.toString() + ", " + coords[index].y.toString();
 
-                var cell2 = tr.insertCell(2);
                 cell2.innerHTML = coords[index].yaw.toString();
 
-                var cell3 = tr.insertCell(3);
                 var element = document.createElement("input");
                 element.type = "text";
                 element.name = "pnameTextbox";
                 cell3.appendChild(element);
                 element.value = coords[index].name;
                 console.log("===");
-
             }
+
 
             var radios = document.querySelectorAll('input[name="ptype"]');
             for (const radio of radios) {
@@ -317,10 +342,6 @@
                         stage.removeAllEventListeners();
                         registerMouseHandlers();
                     })
-            }
-            
-            function submitPointsData() {
-                
             }
         }
 
