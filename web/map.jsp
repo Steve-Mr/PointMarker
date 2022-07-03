@@ -173,6 +173,13 @@
 
                 bitmapW = bitmap.image.width;
                 bitmapH = bitmap.image.height;
+
+                if (bitmapW < bitmapH){
+                    canvas.setAttribute("height", Math.round(bitmapH/bitmapW * canvas.getAttribute("width")).toString());
+                }else {
+                    canvas.setAttribute("width", Math.round(bitmapW/bitmapH * canvas.getAttribute("height")).toString());
+                }
+
                 // restore to values before shifting, if occurred
                 stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
                 stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
@@ -180,8 +187,8 @@
                 console.log(bitmap.getBounds().width.toString());
 
                 // save scene scaling
-                stage.scaleX = 800 / (bitmapW * resolution);
-                stage.scaleY = 800 / (bitmapH * resolution);
+                stage.scaleX = canvas.getAttribute("width") / (bitmapW * resolution);
+                stage.scaleY = canvas.getAttribute("height") / (bitmapH * resolution);
 
                 stage.update();
 

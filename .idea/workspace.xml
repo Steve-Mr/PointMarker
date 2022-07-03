@@ -9,7 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="生成路径 json&#10;ajax 发送路径 json（缺少服务器验证&#10;修改 polygon 点大小计算方式（但可能问题没有解决甚至加重">
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="保存表格中文本框名字的修改">
       <change beforePath="$PROJECT_DIR$/web/map.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/map.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -192,7 +192,7 @@
       <workItem from="1656580675142" duration="9285000" />
       <workItem from="1656644869435" duration="21410000" />
       <workItem from="1656724702047" duration="22120000" />
-      <workItem from="1656813596083" duration="22820000" />
+      <workItem from="1656813596083" duration="23603000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
@@ -250,7 +250,14 @@
       <option name="project" value="LOCAL" />
       <updated>1656859286257</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="保存表格中文本框名字的修改">
+      <created>1656860838395</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1656860838395</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -282,7 +289,8 @@
     <MESSAGE value="记录标点 type" />
     <MESSAGE value="完善表格的显示" />
     <MESSAGE value="生成路径 json&#10;ajax 发送路径 json（缺少服务器验证&#10;修改 polygon 点大小计算方式（但可能问题没有解决甚至加重" />
-    <option name="LAST_COMMIT_MESSAGE" value="生成路径 json&#10;ajax 发送路径 json（缺少服务器验证&#10;修改 polygon 点大小计算方式（但可能问题没有解决甚至加重" />
+    <MESSAGE value="保存表格中文本框名字的修改" />
+    <option name="LAST_COMMIT_MESSAGE" value="保存表格中文本框名字的修改" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
