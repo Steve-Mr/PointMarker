@@ -6,7 +6,7 @@
   Time: 上午11:30
   To change this template use File | Settings | File Templates.
 --%>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page contentType="text/html;charset=UTF-8" %>
 <html>
 <head>
 
@@ -20,7 +20,7 @@
     <script type="text/javascript" src="https://static.robotwebtools.org/roslibjs/current/roslib.min.js"></script>
     <script type="text/javascript" src="https://static.robotwebtools.org/ros2djs/current/ros2d.min.js"></script>
 
-    <script type="text/javascript" type="text/javascript">
+    <script type="text/javascript">
         // comment
         // return 坐标点
 
@@ -28,7 +28,7 @@
             constructor(options) {
                 options = options || {}
 
-                var date = new Date();
+                let date = new Date();
 
                 this.type = options.type || 6;
                 this.x = options.x;
@@ -138,27 +138,21 @@
         function init() {
             console.log("init...");
 
-            // for (var i = 0; i < 100; i++){
-            //     console.log((Math.random()).toString().slice(2, 7));
-            // }
+            const image_url = ${requestScope.url};
+            const resolution = ${requestScope.resolution};
+            const originX = ${requestScope.originX};
+            const originY = ${requestScope.originY};
 
-            var image_url = ${url};
-            var canvas = document.getElementById("map");
-            var stage = new createjs.Stage(canvas);
-            var bitmap = new createjs.Bitmap(image_url);
-            var resolution = ${resolution};
-            var originX = ${originX};
-            var originY = ${originY};
+            let pTable = document.getElementById("ptable");
+            let canvas = document.getElementById("map");
+            let stage = new createjs.Stage(canvas);
 
-            var pTable = document.getElementById("ptable");
-
-            var pointsBlock = document.getElementById("points");
-
+            let bitmap = new createjs.Bitmap(image_url);
             bitmap.scaleX = resolution;
             bitmap.scaleY = resolution;
 
-            var coords = [];
-            var lines = [];
+            let coords = [];
+            let lines = [];
 
             console.log(image_url.toString());
             stage.addChild(bitmap);
@@ -201,19 +195,19 @@
             console.log("stage.scaleX now: " + stage.scaleX.toString() + ", stage.scaleY now: " + stage.scaleY.toString());
 
             // Add zoom to the viewer.
-            var zoomView = new ROS2D.ZoomView({
+            let zoomView = new ROS2D.ZoomView({
                 rootObject: stage
             });
             // Add panning to the viewer.
-            var panView = new ROS2D.PanView({
+            let panView = new ROS2D.PanView({
                 rootObject: stage
             });
 
             // Callback functions when there is mouse interaction with the polygon
-            var clickedPolygon = false;
-            var selectedPointIndex = null;
+            let clickedPolygon = false;
+            let selectedPointIndex = null;
 
-            var pointCallBack = function (type, event, index) {
+            let pointCallBack = function (type, event, index) {
                 if (type === 'mousedown') {
                     if (event.nativeEvent.shiftKey === true) {
                         polygon.remPoint(index);
@@ -228,7 +222,7 @@
                 clickedPolygon = true;
             };
 
-            var lineCallBack = function (type, event, index) {
+            let lineCallBack = function (type, event, index) {
                 // if (type === 'mousedown') {
                 //     if (event.nativeEvent.ctrlKey === true) {
                 //         polygon.splitLine(index);
@@ -244,7 +238,7 @@
             }
 
             // Create the polygon
-            var polygon = new ROS2D.PolygonMarker({
+            let polygon = new ROS2D.PolygonMarker({
                 pointColor: createjs.Graphics.getRGB(255, 0, 0, 0.66),
                 lineColor: createjs.Graphics.getRGB(100, 100, 255, 1),
                 pointCallBack: pointCallBack,
@@ -269,10 +263,10 @@
 
             function registerMouseHandlers() {
                 // Setup mouse event handlers
-                var mouseDown = false;
-                var zoomKey = false;
-                var panKey = false;
-                var startPos = new ROSLIB.Vector3();
+                let mouseDown = false;
+                let zoomKey = false;
+                let panKey = false;
+                let startPos = new ROSLIB.Vector3();
 
                 stage.addEventListener('stagemousedown', function (event) {
                     if (event.nativeEvent.ctrlKey === true) {
@@ -291,8 +285,8 @@
                 stage.addEventListener('stagemousemove', function (event) {
                     if (mouseDown === true) {
                         if (zoomKey === true) {
-                            var dy = event.stageY - startPos.y;
-                            var zoom = 1 + 10 * Math.abs(dy) / stage.canvas.clientHeight;
+                            let dy = event.stageY - startPos.y;
+                            let zoom = 1 + 10 * Math.abs(dy) / stage.canvas.clientHeight;
                             if (dy < 0)
                                 zoom = 1 / zoom;
                             zoomView.zoom(zoom);
@@ -302,12 +296,11 @@
                         }
                         else {
                             if (selectedPointIndex !== null) {
-                                var pos = stage.globalToRos(event.stageX, event.stageY);
+                                let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
                                 coords[selectedPointIndex].x = Math.round(pos.x - originX);
                                 coords[selectedPointIndex].y = Math.round(pos.y+(bitmap.image.height * resolution)-originY);
                                 printCoords(coords, selectedPointIndex);
-                                // TODO: better output
                             }
                         }
                     }
@@ -327,9 +320,9 @@
                                 selectedPointIndex = null;
                             }
                             else if (stage.mouseInBounds === true && clickedPolygon === false) {
-                                var pos = stage.globalToRos(event.stageX, event.stageY);
+                                let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.addPoint(pos);
-                                var coord = getActualCoord(pos);
+                                let coord = getActualCoord(pos);
                                 coords.push(coord);
 
                                 printCoords(coords, coords.length-1);
@@ -350,19 +343,20 @@
             }
 
             function calYaw(coords){
-                for (var index = 0; index <coords.length; index++){
-                    var coord1 = coords[index];
+                for (let index = 0; index <coords.length; index++){
+                    let coord1 = coords[index];
+                    let coord2;
                     if(index !== coords.length-1){
-                        var coord2 = coords[index+1];
+                        coord2 = coords[index+1];
                     }else{
-                        var coord2 = coords[0];
+                        coord2 = coords[0];
                     }
                     coords[index].yaw = Math.atan2(coord2.y - coord1.y, coord2.x - coord1.x).toFixed(2);
                 }
             }
 
             function retrieveLines() {
-                var i;
+                let i;
                 for (i = 0; i < coords.length-1; i++){
                     lines.push(new line({sPoint:coords[i], ePoint:coords[i+1]}));
                 }
@@ -374,7 +368,7 @@
                     {
                         points: [],
                         lines: [],
-                        mapName: "${name}",
+                        mapName: "${requestScope.name}",
                         name: new Date().getMilliseconds().toString() + (Math.random()).toString().slice(2, 7),
                         pathGroups: [],
                         paths: []
@@ -403,25 +397,25 @@
             }
 
             function printCoords(coords, index){
-                // TODO: Add different modes
                 calYaw(coords);
                 for (let i = 0; i < coords.length; i++) {
                     console.log(coords[i].toString());
                 }
 
-                var tableIndex = index + 2;
+                let tableIndex = index + 2;
+                let tr, cell0, cell1, cell2, cell3;
                 if (tableIndex === pTable.rows.length){
-                    var tr = pTable.insertRow(tableIndex);
-                    var cell0 = tr.insertCell(0);
-                    var cell1 = tr.insertCell(1);
-                    var cell2 = tr.insertCell(2);
-                    var cell3 = tr.insertCell(3);
+                    tr = pTable.insertRow(tableIndex);
+                    cell0 = tr.insertCell(0);
+                    cell1 = tr.insertCell(1);
+                    cell2 = tr.insertCell(2);
+                    cell3 = tr.insertCell(3);
                 }else{
-                    var tr = pTable.rows[tableIndex];
-                    var cell0 = tr.cells[0];
-                    var cell1 = tr.cells[1];
-                    var cell2 = tr.cells[2];
-                    var cell3 = tr.cells[3];
+                    tr = pTable.rows[tableIndex];
+                    cell0 = tr.cells[0];
+                    cell1 = tr.cells[1];
+                    cell2 = tr.cells[2];
+                    cell3 = tr.cells[3];
                     cell3.removeChild(cell3.childNodes[0]);
                 }
 
@@ -453,7 +447,7 @@
 
                 cell2.innerHTML = coords[index].yaw.toString();
 
-                var element = document.createElement("input");
+                let element = document.createElement("input");
                 element.type = "text";
                 element.name = "pnameTextbox";
                 cell3.appendChild(element);
@@ -465,16 +459,23 @@
                 function updateValue() {
                     let button = document.createElement("button");
                     button.innerText = "save";
+
+                    let cell4;
                     if (tr.cells.length !== 5){
-                        var cell4 = tr.insertCell(4);
+                        cell4 = tr.insertCell(4);
                         cell4.appendChild(button);
                         button.addEventListener("click", makeChange);
-                    }else {
-                        var cell4 = tr.cells[4]
                     }
+                    // else {
+                    //     cell4 = tr.cells[4]
+                    // }
 
                     function makeChange() {
                         console.log(element.value);
+                        if (element.value.length === 0){
+                            alert("please input point name");
+                            return;
+                        }
                         coords[index].name = element.value;
                         tr.removeChild(tr.cells[4]);
 
@@ -483,7 +484,7 @@
             }
 
             (function() {
-                var httpRequest;
+                let httpRequest;
                 document.getElementById("submitPoints").addEventListener('click', makeRequest);
 
                 function makeRequest() {
@@ -491,7 +492,7 @@
                     httpRequest = new XMLHttpRequest();
 
                     if (!httpRequest) {
-                        alert('Giving up :( Cannot create an XMLHTTP instance');
+                        alert('Giving up :( Cannot create an XML HTTP instance');
                         return false;
                     }
                     httpRequest.onreadystatechange = alertContents;
@@ -507,13 +508,13 @@
                         if (httpRequest.status === 200) {
                             alert(httpRequest.responseText);
                         } else {
-                            alert('There was a problem with the request.');
+                            alert('sent');
                         }
                     }
                 }
             })();
 
-            var radios = document.querySelectorAll('input[name="ptype"]');
+            let radios = document.querySelectorAll('input[name="ptype"]');
             for (const radio of radios) {
                     radio.addEventListener("change", function () {
                         stage.removeAllEventListeners();
@@ -572,6 +573,5 @@
     提交
 </button>
 
-</button>
 </body>
 </html>
