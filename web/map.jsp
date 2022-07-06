@@ -22,8 +22,22 @@
 
     <script type="text/javascript">
         // comment
-        // return 坐标点
 
+        /**
+         * 坐标类
+         * @param:type
+                * 0 - 初始点
+                * 1 - 充电点
+                * 2 - 导航点
+                * 3 - RFID 点
+                * 4 - 注水点
+                * 5 - 排水点
+         * @param: x, y, yaw : 点的 x,y 坐标和偏向角
+         * @param:name 点的名字默认为 Point_ + 年月（0-11）日(1-31) + 毫秒 + 五位随机数 格式
+         *
+         * @function:toString 输出字符串格式
+         * @function:toJSON 输出 JSON 对象
+         * */
         class coord {
             constructor(options) {
                 options = options || {}
@@ -50,7 +64,6 @@
             }
 
             toJSON(){
-                // return JSON.stringify(
                 return {
                     actions: [],
                     gridPosition: {
@@ -62,6 +75,15 @@
             }
         }
 
+        /**
+         * 线段类
+         *
+         * @param:sPoint 起始点
+         * @param:ePoint 终止点
+         * @param:name 线段名，默认使用 起始点名称_终止点名称
+         *
+         * @function:toJSON 输出对应 JSON 对象
+         * */
         class line{
             constructor(options) {
                 this.sPoint = options.sPoint;
@@ -79,6 +101,15 @@
             }
         }
 
+        /**
+         * 路径类
+         *
+         * @Param:allPoints 所有已标记点，即使路径可能不经过该点
+         * @Param:allLines 路径包含所有线段的名字集合
+         * @Param:name 路径名，Path_ + 毫秒 + 五位随机数
+         *
+         * @function:toJSON 输出对应 JSON 对象
+         * */
         class path{
             constructor(options) {
                 this.allPoints = options.allPoints;
@@ -110,6 +141,14 @@
             }
         }
 
+        /**
+         * 路径组
+         * 包含多条路径
+         *
+         * @param:paths 路径组包含的所有路径集合
+         *
+         * @function:toJSON 输出 JSON 对象
+         * */
         class pathGroup{
             constructor(options) {
                 this.paths = options.paths;
@@ -138,82 +177,57 @@
         function init() {
             console.log("init...");
 
-            const image_url = ${requestScope.url};
-            const resolution = ${requestScope.resolution};
-            const originX = ${requestScope.originX};
-            const originY = ${requestScope.originY};
+            /**
+             * request 中参数：
+             * status: 数据获取是否成功，失败则返回前一页
+             * url: 地图的图片链接
+             * resolution, originX, originY: 同地图定义
+             * */
 
-            let pTable = document.getElementById("ptable");
-            let canvas = document.getElementById("map");
+            let originX = 0;
+            let originY = 0;
+
+            if (!${requestScope.status}){
+                alert("error occurred");
+                history.back();
+                return;
+            }
+
+            originX = ${requestScope.originX};
+            originY = ${requestScope.originY};
+
+            let canvas = document.getElementById("map");    // 展示地图
             let stage = new createjs.Stage(canvas);
+            let pTable = document.getElementById("ptable"); // 已标记点表格
 
-            let bitmap = new createjs.Bitmap(image_url);
-            bitmap.scaleX = resolution;
-            bitmap.scaleY = resolution;
+            let bitmap = new createjs.Bitmap(${requestScope.url});
+            bitmap.scaleX = ${requestScope.resolution};
+            bitmap.scaleY = ${requestScope.resolution};
 
+            // 标记点和线段数组
             let coords = [];
             let lines = [];
 
-            console.log(image_url.toString());
-            stage.addChild(bitmap);
-            createjs.Ticker.framerate = 30;
-            createjs.Ticker.addEventListener("tick", stage);
-
-            console.log("stage.scaleX before: " + stage.scaleX.toString() + ", stage.scaleY before: " + stage.scaleY.toString());
-
-            let bitmapW;
-            let bitmapH;
-            bitmap.image.onload = function () {
-
-                bitmapW = bitmap.image.width;
-                bitmapH = bitmap.image.height;
-
-                if (bitmapW < bitmapH){
-                    canvas.setAttribute("height", Math.round(bitmapH/bitmapW * canvas.getAttribute("width")).toString());
-                }else {
-                    canvas.setAttribute("width", Math.round(bitmapW/bitmapH * canvas.getAttribute("height")).toString());
-                }
-
-                // restore to values before shifting, if occurred
-                stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
-                stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
-
-                console.log(bitmap.getBounds().width.toString());
-
-                // save scene scaling
-                stage.scaleX = canvas.getAttribute("width") / (bitmapW * resolution);
-                stage.scaleY = canvas.getAttribute("height") / (bitmapH * resolution);
-
-                stage.update();
-
-                if (polygon!==null){
-                    polygon.pointSize = bitmapW * resolution * 0.01;
-                    polygon.lineSize = bitmapW * resolution * 0.01 * 0.5;
-                }
-            }
-
-            console.log("stage.scaleX now: " + stage.scaleX.toString() + ", stage.scaleY now: " + stage.scaleY.toString());
-
-            // Add zoom to the viewer.
+            // 缩放视图
             let zoomView = new ROS2D.ZoomView({
                 rootObject: stage
             });
-            // Add panning to the viewer.
+            // 平移视图
             let panView = new ROS2D.PanView({
                 rootObject: stage
             });
 
-            // Callback functions when there is mouse interaction with the polygon
+            // 鼠标点击 polygon 时的回调函数
             let clickedPolygon = false;
             let selectedPointIndex = null;
 
             let pointCallBack = function (type, event, index) {
                 if (type === 'mousedown') {
+                    // 按住 shift 点击点则移除此点，未按住 shift 只选中此点
                     if (event.nativeEvent.shiftKey === true) {
                         polygon.remPoint(index);
                         coords.splice(index, 1);
                         pTable.deleteRow(index+2);
-                        // printCoords(pointsBlock, coords);
                     }
                     else {
                         selectedPointIndex = index;
@@ -237,32 +251,77 @@
                 // clickedPolygon = true;
             }
 
-            // Create the polygon
+            // 创建 polygon，用于显示标记点和将标记点连接——即线段
             let polygon = new ROS2D.PolygonMarker({
                 pointColor: createjs.Graphics.getRGB(255, 0, 0, 0.66),
                 lineColor: createjs.Graphics.getRGB(100, 100, 255, 1),
                 pointCallBack: pointCallBack,
                 lineCallBack: lineCallBack,
-                pointSize: bitmapW * resolution * 0.01,
-                lineSize: bitmapW * resolution * 0.01 * 0.5
             });
 
-            console.log(polygon.pointColor);
-
-            // Hack
+            // Hack. 用于避免 polygon 在线段围成区域上添加遮罩——设置该遮罩透明度 100%
             // in source code : this.fillColor = options.pointColor || createjs.Graphics.getRGB(0, 255, 0, 0.33);
             polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
 
-            // Add the polygon to the viewer
-            stage.addChild(new createjs.Shape());
-            stage.addChild(polygon);
-            stage.update();
+            // 地图代表物理区域大小，单位为米，即地图图片大小 * 比例
+            let bitmapW;
+            let bitmapH;
+            // 等待地图图像的加载，避免由于加载速度问题导致显示异常
+            bitmap.image.onload = function () {
+
+                bitmapW = bitmap.image.width * ${requestScope.resolution};
+                bitmapH = bitmap.image.height * ${requestScope.resolution};
+
+                // 根据地图比例修改 canvas 比例
+                if (bitmapW < bitmapH){
+                    canvas.setAttribute("height", Math.round(bitmapH/bitmapW * canvas.getAttribute("width")).toString());
+                }else {
+                    canvas.setAttribute("width", Math.round(bitmapW/bitmapH * canvas.getAttribute("height")).toString());
+                }
+
+                // 设置 stage 的缩放比例
+                // 清除旧比例（如果存在）
+                stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
+                stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
+
+                console.log(bitmap.getBounds().width.toString());
+
+                // 设置 stage 缩放比例
+                stage.scaleX = canvas.getAttribute("width") / bitmapW;
+                stage.scaleY = canvas.getAttribute("height") / bitmapH;
+
+                // stage 添加地图对象，先添加的位于底部
+                stage.addChild(bitmap);
+
+                // stage 自动刷新
+                createjs.Ticker.framerate = 30;
+                createjs.Ticker.addEventListener("tick", stage);
+
+                stage.update();
+
+                // polygon 初始化成功在 stage 上添加 polygon
+                // 此时 polygon 在 bitmap 上层
+                // 并设置 polygon 的点/线段的大小/粗细
+                if (polygon!==null) {
+                    polygon.pointSize = bitmapW * 0.01;
+                    polygon.lineSize = bitmapW * 0.01 * 0.5;
+
+                    // Add the polygon to the viewer
+                    stage.addChild(new createjs.Shape());
+                    stage.addChild(polygon);
+                    stage.update();
+                }
+            }
 
             // Event listeners for mouse interaction with the stage
             stage.mouseMoveOutside = false; // doesn't seem to work
 
             function registerMouseHandlers() {
-                // Setup mouse event handlers
+                // 处理鼠标操作
+                // 单击添加点
+                // 按住 ctrl 点击不放拖动鼠标： 缩放地图
+                // 按住 shift 点击不放拖动鼠标： 移动地图（可能会和移除点冲突）
+                // 未按键时可以拖动点
                 let mouseDown = false;
                 let zoomKey = false;
                 let panKey = false;
@@ -299,7 +358,7 @@
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
                                 coords[selectedPointIndex].x = Math.round(pos.x - originX);
-                                coords[selectedPointIndex].y = Math.round(pos.y+(bitmap.image.height * resolution)-originY);
+                                coords[selectedPointIndex].y = Math.round(pos.y+bitmapH-originY);
                                 printCoords(coords, selectedPointIndex);
                             }
                         }
@@ -334,14 +393,19 @@
                 });
             }
 
+            // 由于坐标系位置不一致需要对点坐标进行换算
+            // x：只需要计算 originX 并四舍五入
+            // y：pos 坐标系原点为左上角，需要的坐标系原点为左下角，需要将 pos.y 值和 bitmapH 相加
             function getActualCoord(pos){
                 this.pos = pos;
                 return new coord({
                     type: document.querySelector('input[name="ptype"]:checked').value,
                     x : Math.round(this.pos.x - originX),
-                    y : Math.round(this.pos.y+(bitmap.image.height * resolution)-originY)});
+                    y : Math.round(this.pos.y+bitmapH-originY)});
             }
 
+            // 根据线段方向计算偏向角，使用弧度单位，逆时针方向为正，x 轴正向为 0
+            // 只有一个点时偏向角为 0
             function calYaw(coords){
                 for (let index = 0; index <coords.length; index++){
                     let coord1 = coords[index];
@@ -355,6 +419,7 @@
                 }
             }
 
+            // 依据已标记点的顺序生成所有线段
             function retrieveLines() {
                 let i;
                 for (i = 0; i < coords.length-1; i++){
@@ -363,6 +428,7 @@
                 lines.push(new line({sPoint:coords[i], ePoint:coords[0]}));
             }
 
+            // 生成返回服务器的 JSON 字符串，格式参照 1.7.1 生成手画路径部分。
             function generateResultJSON() {
                 let result =
                     {
@@ -396,14 +462,28 @@
                 return JSON.stringify(result);
             }
 
+            /**
+             * 在表格中添加或修改某一个标记点信息
+             *
+             * @param:coords 包含标记点的数组
+             * @param:indexs 标记点在数组中位置
+             * */
             function printCoords(coords, index){
                 calYaw(coords);
                 for (let i = 0; i < coords.length; i++) {
                     console.log(coords[i].toString());
                 }
 
+                // 表格中已经存在两行，所以标记点在表格中的对应位置需要 +2
                 let tableIndex = index + 2;
                 let tr, cell0, cell1, cell2, cell3;
+
+                // 标记点位置在最后 —— 需要添加显示该点的行
+                // 否则显示该点的行
+                // cell0: 类型
+                // cell1: 坐标
+                // cell2: 偏向角
+                // cell3: 名字——允许手动编辑
                 if (tableIndex === pTable.rows.length){
                     tr = pTable.insertRow(tableIndex);
                     cell0 = tr.insertCell(0);
@@ -457,6 +537,8 @@
                 element.addEventListener('input', updateValue);
 
                 function updateValue() {
+                    // 在在行末尾添加用户保存值的按钮
+                    // 只有输入框中值不为空才可以保存
                     let button = document.createElement("button");
                     button.innerText = "save";
 
@@ -483,6 +565,7 @@
                 }
             }
 
+            // 点击提交按钮像服务器提交已标记点/线段/路径/路径组信息
             (function() {
                 let httpRequest;
                 document.getElementById("submitPoints").addEventListener('click', makeRequest);
@@ -514,6 +597,7 @@
                 }
             })();
 
+            // 选择标记点的类型，只有在选择后才能进行点的标记
             let radios = document.querySelectorAll('input[name="ptype"]');
             for (const radio of radios) {
                     radio.addEventListener("change", function () {
@@ -562,7 +646,7 @@
         <tr>
             <th>类型</th>
             <th>坐标</th>
-            <th>旋转角</th>
+            <th>偏向角</th>
             <th>名字</th>
         </tr>
     </thead>

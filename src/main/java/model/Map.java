@@ -6,9 +6,9 @@ public class Map {
     int id;
     int gridHeight;
     int gridWidth;
-    float originX;
-    float originY;
-    double resolution;
+    float originX = 0;
+    float originY = 0;
+    double resolution = 1.0;
     String name;
     String pgmFileName;
     String pngFileName;

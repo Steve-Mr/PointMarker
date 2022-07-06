@@ -11,8 +11,9 @@
   <component name="ChangeListManager">
     <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="根据地图比例动态调整 canvas 尺寸">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/model/Map.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/model/Map.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/map.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/map.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/maplist.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/maplist.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -198,6 +199,7 @@
       <workItem from="1656897901186" duration="4162000" />
       <workItem from="1656939582275" duration="606000" />
       <workItem from="1657007235640" duration="3761000" />
+      <workItem from="1657070715354" duration="12764000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
