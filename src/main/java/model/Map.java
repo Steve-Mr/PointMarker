@@ -2,19 +2,34 @@ package model;
 
 public class Map {
 
+    String createdAt;
     String dataFileName;
     int id;
-    int gridHeight;
-    int gridWidth;
-    float originX = 0;
-    float originY = 0;
-    double resolution = 1.0;
     String name;
+    String obstacleFileName;
     String pgmFileName;
     String pngFileName;
     String yamlFileName;
 
+    mapInfo mapInfo = new mapInfo();
+
+    static class mapInfo {
+        int gridHeight;
+        int gridWidth;
+        float originX = 0;
+        float originY = 0;
+        double resolution = 1.0;
+    }
+
     public Map(){}
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
 
     public String getDataFileName() {
         return dataFileName;
@@ -32,52 +47,20 @@ public class Map {
         this.id = id;
     }
 
-    public int getGridHeight() {
-        return gridHeight;
-    }
-
-    public void setGridHeight(int gridHeight) {
-        this.gridHeight = gridHeight;
-    }
-
-    public int getGridWidth() {
-        return gridWidth;
-    }
-
-    public void setGridWidth(int gridWidth) {
-        this.gridWidth = gridWidth;
-    }
-
-    public float getOriginX() {
-        return originX;
-    }
-
-    public void setOriginX(float originX) {
-        this.originX = originX;
-    }
-
-    public float getOriginY() {
-        return originY;
-    }
-
-    public void setOriginY(float originY) {
-        this.originY = originY;
-    }
-
-    public double getResolution() {
-        return resolution;
-    }
-
-    public void setResolution(double resolution) {
-        this.resolution = resolution;
-    }
-
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getObstacleFileName() {
+        return obstacleFileName;
+    }
+
+    public void setObstacleFileName(String obstacleFileName) {
+        this.obstacleFileName = obstacleFileName;
     }
 
     public String getPgmFileName() {
@@ -102,5 +85,45 @@ public class Map {
 
     public void setYamlFileName(String yamlFileName) {
         this.yamlFileName = yamlFileName;
+    }
+
+    public int getGridHeight() {
+        return mapInfo.gridHeight;
+    }
+
+    public void setGridHeight(int gridHeight) {
+        mapInfo.gridHeight = gridHeight;
+    }
+
+    public int getGridWidth() {
+        return mapInfo.gridWidth;
+    }
+
+    public void setGridWidth(int gridWidth) {
+        mapInfo.gridWidth = gridWidth;
+    }
+
+    public float getOriginX() {
+        return mapInfo.originX;
+    }
+
+    public void setOriginX(float originX) {
+        mapInfo.originX = originX;
+    }
+
+    public float getOriginY() {
+        return mapInfo.originY;
+    }
+
+    public void setOriginY(float originY) {
+        mapInfo.originY = originY;
+    }
+
+    public double getResolution() {
+        return mapInfo.resolution;
+    }
+
+    public void setResolution(double resolution) {
+        mapInfo.resolution = resolution;
     }
 }
