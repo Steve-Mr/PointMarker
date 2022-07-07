@@ -225,9 +225,7 @@
                 if (type === 'mousedown') {
                     // 按住 shift 点击点则移除此点，未按住 shift 只选中此点
                     if (event.nativeEvent.shiftKey === true) {
-                        polygon.remPoint(index);
-                        coords.splice(index, 1);
-                        pTable.deleteRow(index+2);
+                        deleteRowFun(index)
                     }
                     else {
                         selectedPointIndex = index;
@@ -237,18 +235,6 @@
             };
 
             let lineCallBack = function (type, event, index) {
-                // if (type === 'mousedown') {
-                //     if (event.nativeEvent.ctrlKey === true) {
-                //         polygon.splitLine(index);
-                //         coords = []
-                //         for(var i = 0; i < polygon.pointContainer.getNumChildren(); i ++){
-                //             var pos = polygon.pointContainer.getChildAt(i);
-                //             coords.push(getActualCoord(pos));
-                //         }
-                //         printCoords(pointsBlock, coords);
-                //     }
-                // }
-                // clickedPolygon = true;
             }
 
             // 创建 polygon，用于显示标记点和将标记点连接——即线段
@@ -474,9 +460,11 @@
                     console.log(coords[i].toString());
                 }
 
+                pTable.hidden = false;
+
                 // 表格中已经存在两行，所以标记点在表格中的对应位置需要 +2
                 let tableIndex = index + 2;
-                let tr, cell0, cell1, cell2, cell3;
+                let tr, cell0, cell1, cell2, cell3, cell4;
 
                 // 标记点位置在最后 —— 需要添加显示该点的行
                 // 否则显示该点的行
@@ -490,6 +478,7 @@
                     cell1 = tr.insertCell(1);
                     cell2 = tr.insertCell(2);
                     cell3 = tr.insertCell(3);
+                    cell4 = tr.insertCell(4);
                 }else{
                     tr = pTable.rows[tableIndex];
                     cell0 = tr.cells[0];
@@ -497,6 +486,7 @@
                     cell2 = tr.cells[2];
                     cell3 = tr.cells[3];
                     cell3.removeChild(cell3.childNodes[0]);
+                    cell4 = tr.cells[4];
                 }
 
                 switch (coords[index].type) {
@@ -536,21 +526,32 @@
 
                 element.addEventListener('input', updateValue);
 
+                let button = document.createElement("button");
+                button.innerText = "delete";
+                cell4.appendChild(button);
+                button.addEventListener("click", deleteRow);
+
                 function updateValue() {
                     // 在在行末尾添加用户保存值的按钮
                     // 只有输入框中值不为空才可以保存
-                    let button = document.createElement("button");
-                    button.innerText = "save";
-
-                    let cell4;
-                    if (tr.cells.length !== 5){
-                        cell4 = tr.insertCell(4);
-                        cell4.appendChild(button);
-                        button.addEventListener("click", makeChange);
-                    }
-                    // else {
-                    //     cell4 = tr.cells[4]
+                    // let button = document.createElement("button");
+                    // button.innerText = "save";
+                    //
+                    // let cell4;
+                    // if (tr.cells.length !== 5){
+                    //     cell4 = tr.insertCell(4);
+                    //     cell4.appendChild(button);
+                    //     button.addEventListener("click", makeChange);
                     // }
+                    // // else {
+                    // //     cell4 = tr.cells[4]
+                    // // }
+                    let button = cell4.childNodes[0];
+
+                    button.innerText = "save";
+                    button.disabled = element.value.length === 0;
+                    button.removeEventListener("click", deleteRow);
+                    button.addEventListener("click", makeChange);
 
                     function makeChange() {
                         console.log(element.value);
@@ -559,9 +560,31 @@
                             return;
                         }
                         coords[index].name = element.value;
-                        tr.removeChild(tr.cells[4]);
-
+                        // tr.removeChild(tr.cells[4]);
+                        button.innerText = "delete";
+                        button.removeEventListener("click", makeChange);
+                        button.addEventListener("click", deleteRow);
                     }
+                }
+
+
+
+                function deleteRow() {
+                    let index = tr.rowIndex - 2;
+                    deleteRowFun(index);
+                }
+
+                document.getElementById("submitPoints").hidden = false;
+            }
+
+            function deleteRowFun(index){
+                this.index = index;
+                polygon.remPoint(this.index);
+                coords.splice(this.index, 1);
+                pTable.deleteRow(this.index+2);
+                if (pTable.rows.length === 2){
+                    document.getElementById("submitPoints").hidden = true;
+                    pTable.hidden = true;
                 }
             }
 
@@ -638,7 +661,7 @@
 </form>
 <canvas id="map" width="800" height="800" style="border:1px solid #f11010;"></canvas>
 <p id="points"></p>
-<table id="ptable">
+<table id="ptable" hidden>
     <thead>
         <tr>
             <th colspan="4">已标记点</th>
@@ -653,7 +676,7 @@
     <tbody>
     </tbody>
 </table>
-<button id="submitPoints" type="button">
+<button id="submitPoints" type="button" hidden>
     提交
 </button>
 
