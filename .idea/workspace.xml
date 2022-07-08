@@ -11,7 +11,6 @@
   <component name="ChangeListManager">
     <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="优化 json 处理方式">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/map.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/map.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -209,6 +208,8 @@
       <workItem from="1657115202119" duration="131000" />
       <workItem from="1657115338244" duration="1200000" />
       <workItem from="1657187441416" duration="5459000" />
+      <workItem from="1657266808898" duration="1377000" />
+      <workItem from="1657284874812" duration="3163000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>

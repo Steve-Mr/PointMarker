@@ -53,6 +53,7 @@
                     +date.getMonth().toString() +date.getDate().toString()
                     +date.getMilliseconds().toString()+ "_"
                     + (Math.random()).toString().slice(2, 7);
+                this.mapName = options.mapName || "unset";
             }
 
             toString(){
@@ -72,6 +73,17 @@
                     },
                     name: this.name
                 };
+            }
+
+            toJSONAlt(){
+                return {
+                    angle: this.yaw,
+                    gridX: this.x,
+                    gridY: this.y,
+                    mapName: this.mapName,
+                    name: this.name,
+                    type: this.type
+                }
             }
         }
 
@@ -416,6 +428,7 @@
 
             // 生成返回服务器的 JSON 字符串，格式参照 1.7.1 生成手画路径部分。
             function generateResultJSON() {
+
                 let result =
                     {
                         points: [],
@@ -452,121 +465,134 @@
              * 在表格中添加或修改某一个标记点信息
              *
              * @param:coords 包含标记点的数组
-             * @param:indexs 标记点在数组中位置
+             * @param:index 标记点在数组中位置
              * */
             function printCoords(coords, index){
-                calYaw(coords);
-                for (let i = 0; i < coords.length; i++) {
-                    console.log(coords[i].toString());
-                }
+
 
                 pTable.hidden = false;
 
                 // 表格中已经存在两行，所以标记点在表格中的对应位置需要 +2
-                let tableIndex = index + 2;
+                let tableIndex;
                 let tr, cell0, cell1, cell2, cell3, cell4;
 
-                // 标记点位置在最后 —— 需要添加显示该点的行
-                // 否则显示该点的行
-                // cell0: 类型
-                // cell1: 坐标
-                // cell2: 偏向角
-                // cell3: 名字——允许手动编辑
-                if (tableIndex === pTable.rows.length){
-                    tr = pTable.insertRow(tableIndex);
-                    cell0 = tr.insertCell(0);
-                    cell1 = tr.insertCell(1);
-                    cell2 = tr.insertCell(2);
-                    cell3 = tr.insertCell(3);
-                    cell4 = tr.insertCell(4);
-                }else{
-                    tr = pTable.rows[tableIndex];
-                    cell0 = tr.cells[0];
-                    cell1 = tr.cells[1];
-                    cell2 = tr.cells[2];
-                    cell3 = tr.cells[3];
-                    cell3.removeChild(cell3.childNodes[0]);
-                    cell4 = tr.cells[4];
-                }
-
-                switch (coords[index].type) {
-                    case "0":
-                        cell0.innerHTML = "初始点";
-                        break;
-                    case "1":
-                        cell0.innerHTML = "充电点";
-                        break;
-                    case "2":
-                        cell0.innerHTML = "导航点";
-                        break;
-                    case "3":
-                        cell0.innerHTML = "RFID点";
-                        break;
-                    case "4":
-                        cell0.innerHTML = "注水点";
-                        break;
-                    case "5":
-                        cell0.innerHTML = "排水点";
-                        break;
-                    default:
-                        cell0.innerHTML = "未知/错误";
-                        break;
-                }
-
-                cell1.innerHTML = coords[index].x.toString() + ", " + coords[index].y.toString();
-
-                cell2.innerHTML = coords[index].yaw.toString();
-
-                let element = document.createElement("input");
-                element.type = "text";
-                element.name = "pnameTextbox";
-                cell3.appendChild(element);
-                element.value = coords[index].name;
-                console.log("===");
-
-                element.addEventListener('input', updateValue);
-
-                let button = document.createElement("button");
-                button.innerText = "delete";
-                cell4.appendChild(button);
-                button.addEventListener("click", deleteRow);
-
-                function updateValue() {
-                    // 在在行末尾添加用户保存值的按钮
-                    // 只有输入框中值不为空才可以保存
-                    // let button = document.createElement("button");
-                    // button.innerText = "save";
-                    //
-                    // let cell4;
-                    // if (tr.cells.length !== 5){
-                    //     cell4 = tr.insertCell(4);
-                    //     cell4.appendChild(button);
-                    //     button.addEventListener("click", makeChange);
-                    // }
-                    // // else {
-                    // //     cell4 = tr.cells[4]
-                    // // }
-                    let button = cell4.childNodes[0];
-
-                    button.innerText = "save";
-                    button.disabled = element.value.length === 0;
-                    button.removeEventListener("click", deleteRow);
-                    button.addEventListener("click", makeChange);
-
-                    function makeChange() {
-                        console.log(element.value);
-                        if (element.value.length === 0){
-                            alert("please input point name");
-                            return;
-                        }
-                        coords[index].name = element.value;
-                        // tr.removeChild(tr.cells[4]);
-                        button.innerText = "delete";
-                        button.removeEventListener("click", makeChange);
-                        button.addEventListener("click", deleteRow);
+                // 当一个点发生变动时需要更新附近点
+                if (index === 0){
+                    if (coords.length > 1){
+                        updateTable(coords, 1);
+                        updateTable(coords, index);
+                        updateTable(coords, (coords.length - 1));
                     }
+                } else if (index > 0 && index < coords.length -1){
+                    updateTable(coords, index -1);
+                    updateTable(coords, index);
+                    updateTable(coords, index +1);
+                } else if (index === coords.length -1){
+                    updateTable(coords, index -1);
+                    updateTable(coords, index);
+                    updateTable(coords, 0);
                 }
 
+
+                function updateTable(coords, index) {
+                    calYaw(coords);
+                    for (let i = 0; i < coords.length; i++) {
+                        console.log(coords[i].toString());
+                    }
+                    tableIndex = index + 2;
+
+
+                    // 标记点位置在最后 —— 需要添加显示该点的行
+                    // 否则显示该点的行
+                    // cell0: 类型
+                    // cell1: 坐标
+                    // cell2: 偏向角
+                    // cell3: 名字——允许手动编辑
+                    if (tableIndex === pTable.rows.length){
+                        tr = pTable.insertRow(tableIndex);
+                        cell0 = tr.insertCell(0);
+                        cell1 = tr.insertCell(1);
+                        cell2 = tr.insertCell(2);
+                        cell3 = tr.insertCell(3);
+                        cell4 = tr.insertCell(4);
+                    }else{
+                        tr = pTable.rows[tableIndex];
+                        cell0 = tr.cells[0];
+                        cell1 = tr.cells[1];
+                        cell2 = tr.cells[2];
+                        cell3 = tr.cells[3];
+                        cell3.removeChild(cell3.childNodes[0]);
+                        cell4 = tr.cells[4];
+                        cell4.removeChild(cell4.childNodes[0]);
+                    }
+
+                    switch (coords[index].type) {
+                        case "0":
+                            cell0.innerHTML = "初始点";
+                            break;
+                        case "1":
+                            cell0.innerHTML = "充电点";
+                            break;
+                        case "2":
+                            cell0.innerHTML = "导航点";
+                            break;
+                        case "3":
+                            cell0.innerHTML = "RFID点";
+                            break;
+                        case "4":
+                            cell0.innerHTML = "注水点";
+                            break;
+                        case "5":
+                            cell0.innerHTML = "排水点";
+                            break;
+                        default:
+                            cell0.innerHTML = "未知/错误";
+                            break;
+                    }
+
+                    cell1.innerHTML = coords[index].x.toString() + ", " + coords[index].y.toString();
+
+                    cell2.innerHTML = coords[index].yaw.toString();
+
+                    let element = document.createElement("input");
+                    element.type = "text";
+                    element.name = "pnameTextbox";
+                    cell3.appendChild(element);
+                    element.value = coords[index].name;
+                    console.log("===");
+
+                    element.addEventListener('input', updateValue);
+
+                    let button = document.createElement("button");
+                    button.innerText = "delete";
+                    cell4.appendChild(button);
+                    button.addEventListener("click", deleteRow);
+
+                    function updateValue() {
+                        // 修改输入框内容时删除键变为保存键
+                        // 只有输入框中值不为空才可以保存
+                        let button = cell4.childNodes[0];
+
+                        button.innerText = "save";
+                        button.disabled = element.value.length === 0;
+                        button.removeEventListener("click", deleteRow);
+                        button.addEventListener("click", makeChange);
+
+                        function makeChange() {
+                            console.log(element.value);
+                            if (element.value.length === 0) {
+                                alert("please input point name");
+                                return;
+                            }
+                            coords[index].name = element.value;
+                            // tr.removeChild(tr.cells[4]);
+                            button.innerText = "delete";
+                            button.removeEventListener("click", makeChange);
+                            button.addEventListener("click", deleteRow);
+                        }
+                    }
+
+                }
 
 
                 function deleteRow() {
@@ -591,7 +617,7 @@
             // 点击提交按钮像服务器提交已标记点/线段/路径/路径组信息
             (function() {
                 let httpRequest;
-                document.getElementById("submitPoints").addEventListener('click', makeRequest);
+                document.getElementById("submitPoints").addEventListener('click', makeRequestAlt);
 
                 function makeRequest() {
 
@@ -609,12 +635,59 @@
                     console.log(httpRequest);
                 }
 
+                function makeRequestAlt() {
+                    // 在服务器上线后需要大量修改
+
+                    httpRequest = new XMLHttpRequest();
+                    if (!httpRequest) {
+                        alert('Giving up :( Cannot create an XML HTTP instance');
+                        return false;
+                    }
+                    httpRequest.open('POST', 'https://127.0.0.1/test.html/gs-robot/cmd/generate_graph_path');
+                    httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+                    for (let i = 0; i < coords.length; i++){
+
+                        coords[i].mapName = "${requestScope.name}";
+                        // httpRequest.send(coords[i].toJSONAlt());
+                        if (i === coords.length - 1){
+                            httpRequest.onreadystatechange = alertContents;
+                            httpRequest.send(coords[i].toJSONAlt());
+                        }else{
+                            // httpRequest.onreadystatechange = alertContentsAlt;
+
+                        }
+
+                        console.log(coords[i].toJSONAlt());
+                        console.log(httpRequest);
+                    }
+
+                    <%--for (let i = 0; i < coords.length; i++){--%>
+                    <%--    if (i === coords.length - 1){--%>
+                    <%--        httpRequest.onreadystatechange = alertContents;--%>
+                    <%--    }else{--%>
+                    <%--        httpRequest.onreadystatechange = alertContentsAlt;--%>
+                    <%--    }--%>
+                    <%--    coords[i].mapName = "${requestScope.name}";--%>
+                    <%--    httpRequest.send(coords[i].toJSONAlt());--%>
+                    <%--}--%>
+                }
+
                 function alertContents() {
                     if (httpRequest.readyState === XMLHttpRequest.DONE) {
                         if (httpRequest.status === 200) {
                             alert(httpRequest.responseText);
                         } else {
                             alert('sent');
+                        }
+                    }
+                }
+
+                function alertContentsAlt() {
+                    if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                        if (httpRequest.status === 200) {
+                            alert("error occurred");
+                            // 这里应该放到 else 框体中，为测试用进行对调
+                        } else {
                         }
                     }
                 }
