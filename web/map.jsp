@@ -309,6 +309,8 @@
                     stage.addChild(polygon);
                     stage.update();
                 }
+
+                loadMapObj();
             }
 
             // Event listeners for mouse interaction with the stage
@@ -379,6 +381,7 @@
                             else if (stage.mouseInBounds === true && clickedPolygon === false) {
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.addPoint(pos);
+                                console.log(pos)
                                 let coord = getActualCoord(pos);
                                 coords.push(coord);
 
@@ -701,8 +704,145 @@
                         registerMouseHandlers();
                     })
             }
-        }
 
+            // 加载各种地图上的特殊对象
+            function loadMapObj() {
+                let mapObjs = ${requestScope.json};
+                console.log(JSON.stringify(mapObjs));
+
+                // let obstacles_polylines;
+                let obj;
+                let color;
+                for (let key in mapObjs){
+                    // if (key === "obstacles"){
+                    //     obstacles_polylines = mapObjs[key];
+                    // }
+                    obj = mapObjs[key];
+                    switch (key) {
+                        case "carpets":
+                            color = createjs.Graphics.getRGB(176, 219, 67, 1);
+                            break;
+                        case "decelerations":
+                            color = createjs.Graphics.getRGB(18, 234, 234, 1);
+                            break;
+                        case "displays":
+                            color = createjs.Graphics.getRGB(188, 231, 253, 1);
+                            break;
+                        case "highlight":
+                            color = createjs.Graphics.getRGB(196, 146, 177, 1);
+                            break;
+                        case "obstacles":
+                            color = createjs.Graphics.getRGB(219, 39, 99, 1);
+                            break;
+                        case "slopes":
+                            color = createjs.Graphics.getRGB(240, 247, 87, 1);
+                            break;
+                        default :
+                            break;
+                    }
+                    for (let key in obj){
+                        drawObj(key, obj[key], color);
+                    }
+                }
+            }
+
+            // 根据坐标等参数在地图上绘制特殊对象
+            function drawObj(objShape, obj, color) {
+                console.log(objShape + " " + obj);
+                function createPolygon(){
+                    return new ROS2D.PolygonMarker({
+                        pointColor: color,
+                        lineColor: color,
+                        pointCallBack: pointCallBack,
+                        lineCallBack: lineCallBack,
+                        pointSize: bitmapW * 0.01,
+                        lineSize: bitmapW * 0.01 * 0.5,
+                        fillColor: color
+                    });
+                }
+
+                switch (objShape.toString()) {
+                    case "circles":
+                        for (let i = 0; i < obj.length; i++){
+                            // 使用 polygon 方法能够更容易将来实现拖动等操作
+                            let polygon = createPolygon();
+                            polygon.pointSize = obj[i].r
+                            let pos = {
+                                x: obj[i].x,
+                                y: obj[i].y,
+                                z: 0};
+                            polygon.addPoint(pos);
+                            polygon.lineContainer.removeAllChildren();
+                            stage.addChild(polygon);
+                        }
+                        break;
+                    case "lines":
+                        for (let i = 0; i < obj.length; i++){
+                            let polygon = createPolygon();
+                            for (let j = 0; j < obj[i].length; j++){
+                                let pos = {
+                                    x: obj[i][j].x,
+                                    y: obj[i][j].y,
+                                    z: 0};
+                                polygon.addPoint(pos);
+                            }
+                            stage.addChild(polygon);
+                        }
+                        break;
+                    case "polygons":
+                        for (let i = 0; i < obj.length; i++){
+
+                            for (let j = 0; j < obj[i].length; j++){
+                                let pos = {
+                                    x: obj[i][j].x,
+                                    y: obj[i][j].y,
+                                    z: 0};
+                                polygon.addPoint(pos);
+                            }
+                            stage.addChild(polygon);
+                        }
+                        break;
+                    case "polylines":
+                        for (let i = 0; i < obj.length; i++){
+                            let polygon = createPolygon();
+                            polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
+                            for (let j = 0; j < obj[i].length; j++){
+                                let pos = {
+                                    x: obj[i][j].x,
+                                    y: obj[i][j].y,
+                                    z: 0};
+                                polygon.addPoint(pos);
+                            }
+                            if (obj[i].length >= 3){
+                                console.log(obj[i].length);
+                                polygon.lineContainer.removeChildAt(obj[i].length - 1);
+                            }
+                            stage.addChild(polygon);
+                        }
+                        break;
+                    case "rectangles":
+                        console.log(obj.length)
+                        for (let i = 0; i < obj.length; i++){
+                            console.log(obj[i].length);
+                            let polygon = createPolygon();
+                            let x1 = obj[i][0].x;
+                            let y1 = obj[i][0].y;
+                            let x2 = obj[i][1].x;
+                            let y2 = obj[i][1].y;
+                            polygon.addPoint({x:x1, y:y1, z:0});
+                            polygon.addPoint({x:x1, y:y2, z:0});
+                            polygon.addPoint({x:x2, y:y2, z:0});
+                            polygon.addPoint({x:x2, y:y1, z:0});
+                            stage.addChild(polygon);
+                        }
+                        break;
+                    default:
+                        break;
+
+                }
+                stage.update();
+            }
+        }
 
     </script>
 
