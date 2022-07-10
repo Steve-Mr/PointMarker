@@ -380,7 +380,7 @@
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.addPoint(pos);
                                 console.log(pos)
-                                let coord = getActualCoord(pos);
+                                let coord = geDisplayCoord(pos);
                                 coords.push(coord);
 
                                 printCoords(coords, coords.length-1);
@@ -395,12 +395,19 @@
             // 由于坐标系位置不一致需要对点坐标进行换算
             // x：只需要计算 originX 并四舍五入
             // y：pos 坐标系原点为左上角，需要的坐标系原点为左下角，需要将 pos.y 值和 bitmapH 相加
-            function getActualCoord(pos){
+            function geDisplayCoord(pos){
                 this.pos = pos;
                 return new coord({
                     type: document.querySelector('input[name="ptype"]:checked').value,
                     x : Math.round(this.pos.x - originX),
                     y : Math.round(this.pos.y+bitmapH-originY)});
+            }
+
+            function getOnStageCoord(obj){
+                return {
+                    x: obj.x + originX,
+                    y: obj.y + originY - bitmapH
+                };
             }
 
             // 根据线段方向计算偏向角，使用弧度单位，逆时针方向为正，x 轴正向为 0
@@ -747,7 +754,7 @@
                         lineColor: color,
                         pointCallBack: pointCallBack,
                         lineCallBack: lineCallBack,
-                        pointSize: bitmapW * 0.01,
+                        pointSize: bitmapW * 0.01 * 0.5,
                         lineSize: bitmapW * 0.01 * 0.5,
                         fillColor: color
                     });
@@ -758,10 +765,11 @@
                         for (let i = 0; i < obj.length; i++){
                             // 使用 polygon 方法能够更容易将来实现拖动等操作
                             let polygon = createPolygon();
-                            polygon.pointSize = obj[i].r
+                            polygon.pointSize = obj[i].r;
+                            let convertedPoint = getOnStageCoord(obj[i]);
                             let pos = {
-                                x: obj[i].x,
-                                y: obj[i].y,
+                                x: convertedPoint.x,
+                                y: convertedPoint.y,
                                 z: 0};
                             polygon.addPoint(pos);
                             polygon.lineContainer.removeAllChildren();
@@ -772,9 +780,10 @@
                         for (let i = 0; i < obj.length; i++){
                             let polygon = createPolygon();
                             for (let j = 0; j < obj[i].length; j++){
+                                let convertedPoint = getOnStageCoord(obj[i][j]);
                                 let pos = {
-                                    x: obj[i][j].x,
-                                    y: obj[i][j].y,
+                                    x: convertedPoint.x,
+                                    y: convertedPoint.y,
                                     z: 0};
                                 polygon.addPoint(pos);
                             }
@@ -783,11 +792,11 @@
                         break;
                     case "polygons":
                         for (let i = 0; i < obj.length; i++){
-
                             for (let j = 0; j < obj[i].length; j++){
+                                let convertedPoint = getOnStageCoord(obj[i][j]);
                                 let pos = {
-                                    x: obj[i][j].x,
-                                    y: obj[i][j].y,
+                                    x: convertedPoint.x,
+                                    y: convertedPoint.y,
                                     z: 0};
                                 polygon.addPoint(pos);
                             }
@@ -799,9 +808,10 @@
                             let polygon = createPolygon();
                             polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
                             for (let j = 0; j < obj[i].length; j++){
+                                let convertedPoint = getOnStageCoord(obj[i][j]);
                                 let pos = {
-                                    x: obj[i][j].x,
-                                    y: obj[i][j].y,
+                                    x: convertedPoint.x,
+                                    y: convertedPoint.y,
                                     z: 0};
                                 polygon.addPoint(pos);
                             }
@@ -814,10 +824,12 @@
                     case "rectangles":
                         for (let i = 0; i < obj.length; i++){
                             let polygon = createPolygon();
-                            let x1 = obj[i][0].x;
-                            let y1 = obj[i][0].y;
-                            let x2 = obj[i][1].x;
-                            let y2 = obj[i][1].y;
+                            let convertedPoint1 = getOnStageCoord(obj[i][0]);
+                            let convertedPoint2 = getOnStageCoord(obj[i][1]);
+                            let x1 = convertedPoint1.x;
+                            let y1 = convertedPoint1.y;
+                            let x2 = convertedPoint2.x;
+                            let y2 = convertedPoint2.y;
                             polygon.addPoint({x:x1, y:y1, z:0});
                             polygon.addPoint({x:x1, y:y2, z:0});
                             polygon.addPoint({x:x2, y:y2, z:0});
@@ -840,7 +852,7 @@
 <h1>Simple Map Example</h1>
 
 <form>
-    <p>Please choose point type</p>
+    <p>请选择标记点类型</p>
     <div>
         <input type="radio" id="type0" name="ptype" value="0">
         <label for="type0">初始点</label>
@@ -862,6 +874,20 @@
     </div>
 </form>
 <canvas id="map" width="800" height="800" style="border:1px solid #f11010;"></canvas>
+<div>
+    <canvas width="10" height="10" style="background-color: rgb(176, 219, 67 )">Carpets</canvas>
+    Carpets
+    <canvas width="10" height="10" style="background-color: rgb(18,  234, 234)">Decelerations</canvas>
+    Decelerations
+    <canvas width="10" height="10" style="background-color: rgb(188, 231, 253)">Displays</canvas>
+    Displays
+    <canvas width="10" height="10" style="background-color: rgb(196, 146, 177)">Highlight</canvas>
+    Highlight
+    <canvas width="10" height="10" style="background-color: rgb(219, 39,  99 )">Obstacles</canvas>
+    Obstacles
+    <canvas width="10" height="10" style="background-color: rgb(240, 247, 87 )">Slopes</canvas>
+    Slopes
+</div>
 <p id="points"></p>
 <table id="ptable" hidden>
     <thead>

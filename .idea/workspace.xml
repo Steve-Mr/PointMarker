@@ -9,7 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="优化 json 处理方式">
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="修正表格删除键功能错误问题">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/map.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/map.jsp" afterDir="false" />
@@ -212,7 +212,7 @@
       <workItem from="1657266808898" duration="1377000" />
       <workItem from="1657284874812" duration="3163000" />
       <workItem from="1657331147123" duration="23107000" />
-      <workItem from="1657413619148" duration="10196000" />
+      <workItem from="1657413619148" duration="15341000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
@@ -291,7 +291,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657105239267</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="修正表格删除键功能错误问题">
+      <created>1657426783360</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1657426783360</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -327,7 +334,8 @@
     <MESSAGE value="根据地图比例动态调整 canvas 尺寸" />
     <MESSAGE value="添加注释" />
     <MESSAGE value="优化 json 处理方式" />
-    <option name="LAST_COMMIT_MESSAGE" value="优化 json 处理方式" />
+    <MESSAGE value="修正表格删除键功能错误问题" />
+    <option name="LAST_COMMIT_MESSAGE" value="修正表格删除键功能错误问题" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
