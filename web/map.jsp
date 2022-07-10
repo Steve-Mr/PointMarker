@@ -282,8 +282,6 @@
                 stage.x = typeof stage.x_prev_shift !== 'undefined' ? stage.x_prev_shift : stage.x;
                 stage.y = typeof stage.y_prev_shift !== 'undefined' ? stage.y_prev_shift : stage.y;
 
-                console.log(bitmap.getBounds().width.toString());
-
                 // 设置 stage 缩放比例
                 stage.scaleX = canvas.getAttribute("width") / bitmapW;
                 stage.scaleY = canvas.getAttribute("height") / bitmapH;
@@ -471,39 +469,32 @@
              * @param:index 标记点在数组中位置
              * */
             function printCoords(coords, index){
-
-
                 pTable.hidden = false;
 
                 // 表格中已经存在两行，所以标记点在表格中的对应位置需要 +2
                 let tableIndex;
-                let tr, cell0, cell1, cell2, cell3, cell4;
+                let tr, cell0, cell1, cell2, cell3, cell4,    cell5;
 
                 // 当一个点发生变动时需要更新附近点
-                if (index === 0){
+                if (index === 0) {
                     if (coords.length > 1){
-                        updateTable(coords, 1);
                         updateTable(coords, index);
                         updateTable(coords, (coords.length - 1));
+                    }else{
+                        updateTable(coords, index);
                     }
-                } else if (index > 0 && index < coords.length -1){
-                    updateTable(coords, index -1);
+                } else {
                     updateTable(coords, index);
-                    updateTable(coords, index +1);
-                } else if (index === coords.length -1){
-                    updateTable(coords, index -1);
-                    updateTable(coords, index);
-                    updateTable(coords, 0);
+                    updateTable(coords, index - 1);
                 }
 
-
                 function updateTable(coords, index) {
+                    console.log("updatetable " + index.toString())
                     calYaw(coords);
                     for (let i = 0; i < coords.length; i++) {
                         console.log(coords[i].toString());
                     }
                     tableIndex = index + 2;
-
 
                     // 标记点位置在最后 —— 需要添加显示该点的行
                     // 否则显示该点的行
@@ -518,15 +509,14 @@
                         cell2 = tr.insertCell(2);
                         cell3 = tr.insertCell(3);
                         cell4 = tr.insertCell(4);
+                        cell5 = tr.insertCell(5);
                     }else{
                         tr = pTable.rows[tableIndex];
                         cell0 = tr.cells[0];
                         cell1 = tr.cells[1];
                         cell2 = tr.cells[2];
                         cell3 = tr.cells[3];
-                        cell3.removeChild(cell3.childNodes[0]);
                         cell4 = tr.cells[4];
-                        cell4.removeChild(cell4.childNodes[0]);
                     }
 
                     switch (coords[index].type) {
@@ -557,24 +547,33 @@
 
                     cell2.innerHTML = coords[index].yaw.toString();
 
-                    let element = document.createElement("input");
-                    element.type = "text";
-                    element.name = "pnameTextbox";
+                    let element;
+                    if (cell3.childNodes.length !== 0) {
+                        element = cell3.childNodes[0];
+                    }else{
+                        element = document.createElement("input");
+                        element.type = "text";
+                        element.name = "pnameTextbox";
+                        element.addEventListener('input', updateValue);
+                    }
+
                     cell3.appendChild(element);
                     element.value = coords[index].name;
                     console.log("===");
 
-                    element.addEventListener('input', updateValue);
-
-                    let button = document.createElement("button");
-                    button.innerText = "delete";
-                    cell4.appendChild(button);
-                    button.addEventListener("click", deleteRow);
+                    let button;
+                    if (cell4.childNodes.length !== 0){
+                        button = cell4.childNodes[0];
+                    }else{
+                        button = document.createElement("button");
+                        button.innerText = "delete";
+                        cell4.appendChild(button);
+                        button.addEventListener("click", deleteRow);
+                    }
 
                     function updateValue() {
                         // 修改输入框内容时删除键变为保存键
                         // 只有输入框中值不为空才可以保存
-                        let button = cell4.childNodes[0];
 
                         button.innerText = "save";
                         button.disabled = element.value.length === 0;
@@ -582,25 +581,21 @@
                         button.addEventListener("click", makeChange);
 
                         function makeChange() {
-                            console.log(element.value);
                             if (element.value.length === 0) {
                                 alert("please input point name");
                                 return;
                             }
                             coords[index].name = element.value;
-                            // tr.removeChild(tr.cells[4]);
                             button.innerText = "delete";
                             button.removeEventListener("click", makeChange);
                             button.addEventListener("click", deleteRow);
                         }
                     }
 
-                }
-
-
-                function deleteRow() {
-                    let index = tr.rowIndex - 2;
-                    deleteRowFun(index);
+                    function deleteRow() {
+                        let index = button.parentNode.parentNode.rowIndex - 2;
+                        deleteRowFun(index);
+                    }
                 }
 
                 document.getElementById("submitPoints").hidden = false;
@@ -714,9 +709,6 @@
                 let obj;
                 let color;
                 for (let key in mapObjs){
-                    // if (key === "obstacles"){
-                    //     obstacles_polylines = mapObjs[key];
-                    // }
                     obj = mapObjs[key];
                     switch (key) {
                         case "carpets":
@@ -738,6 +730,7 @@
                             color = createjs.Graphics.getRGB(240, 247, 87, 1);
                             break;
                         default :
+                            continue;
                             break;
                     }
                     for (let key in obj){
@@ -748,7 +741,6 @@
 
             // 根据坐标等参数在地图上绘制特殊对象
             function drawObj(objShape, obj, color) {
-                console.log(objShape + " " + obj);
                 function createPolygon(){
                     return new ROS2D.PolygonMarker({
                         pointColor: color,
@@ -814,16 +806,13 @@
                                 polygon.addPoint(pos);
                             }
                             if (obj[i].length >= 3){
-                                console.log(obj[i].length);
                                 polygon.lineContainer.removeChildAt(obj[i].length - 1);
                             }
                             stage.addChild(polygon);
                         }
                         break;
                     case "rectangles":
-                        console.log(obj.length)
                         for (let i = 0; i < obj.length; i++){
-                            console.log(obj[i].length);
                             let polygon = createPolygon();
                             let x1 = obj[i][0].x;
                             let y1 = obj[i][0].y;
