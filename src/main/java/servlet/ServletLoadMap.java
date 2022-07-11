@@ -56,8 +56,20 @@ public class ServletLoadMap extends HttpServlet {
             "         \"polygons\":[\n" +
             "            \n" +
             "         ],\n" +
-            "         \"polylines\":[\n" +
+            "         \"polygons\":[\n" +
             "            \n" +
+            "         ],\n" +
+            "         \"polylines\":[\n" +
+            "            [\n" +
+            "               {\n" +
+            "                  \"x\":6,\n" +
+            "                  \"y\":51\n" +
+            "               },\n" +
+            "               {\n" +
+            "                  \"x\":8,\n" +
+            "                  \"y\":52\n" +
+            "               }\n" +
+            "            ],\n" +
             "         ],\n" +
             "         \"rectangles\":[\n" +
             "            \n" +
@@ -311,7 +323,7 @@ public class ServletLoadMap extends HttpServlet {
             request.setAttribute("json", jsonString);
         }
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("map.jsp");
+        RequestDispatcher dispatcher = request.getRequestDispatcher("mapObj.jsp");
         dispatcher.forward(request, response);
 
     }

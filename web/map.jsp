@@ -380,7 +380,7 @@
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.addPoint(pos);
                                 console.log(pos)
-                                let coord = geDisplayCoord(pos);
+                                let coord = getDisplayCoord(pos);
                                 coords.push(coord);
 
                                 printCoords(coords, coords.length-1);
@@ -395,7 +395,7 @@
             // 由于坐标系位置不一致需要对点坐标进行换算
             // x：只需要计算 originX 并四舍五入
             // y：pos 坐标系原点为左上角，需要的坐标系原点为左下角，需要将 pos.y 值和 bitmapH 相加
-            function geDisplayCoord(pos){
+            function getDisplayCoord(pos){
                 this.pos = pos;
                 return new coord({
                     type: document.querySelector('input[name="ptype"]:checked').value,
