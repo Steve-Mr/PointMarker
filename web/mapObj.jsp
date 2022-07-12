@@ -237,6 +237,11 @@
       let isRadiusUnsetClicked = false;
       let coordCircle;
 
+      let objList = [];
+      let linesPos = [];
+      let rectPos = [];
+      let polyPos = [];
+
       let pointCallBack = function (type, event, index) {
         if (type === 'mousedown') {
           // 按住 shift 点击点则移除此点，未按住 shift 只选中此点
@@ -468,6 +473,13 @@
                         polygon.addPoint(pos);
                         polygon.pointSize = prePointSize;
 
+                        addToObjList({
+                          type: document.querySelector('input[name="objType"]:checked').value,
+                          shape: document.querySelector('input[name="shapeType"]:checked').value,
+                          points: [pos],
+                          radius: radiusBox.value
+                        })
+
                         isRadiusUnsetClicked = false;
 
                         buttonSave.removeEventListener("click",createCircle);
@@ -479,20 +491,30 @@
                     break;
                   case "lines":
                     if (polygon.pointContainer.getNumChildren() !== 2){
+                      linesPos.push(pos);
                       polygon.addPoint(pos);
                     } else {
                       addNewPolygon();
+                      addToObjList({
+                        type: document.querySelector('input[name="objType"]:checked').value,
+                        shape: document.querySelector('input[name="shapeType"]:checked').value,
+                        points: linesPos,
+                      })
+                      linesPos = [];
                       polygon.addPoint(pos);
+                      linesPos.push(pos);
                     }
                     break;
                   case "polygons":
                     document.getElementById("newObj").hidden = false;
                     console.log("polygon points " + polygon.pointContainer.getNumChildren());
                     polygon.addPoint(pos);
+                    polyPos.push(pos);
                     break;
                   case "polylines":
                     document.getElementById("newObj").hidden = false;
                     points.push(pos);
+                    polyPos.push(pos);
                     console.log("polyline points " + polygon.pointContainer.getNumChildren());
 
                     polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
@@ -515,6 +537,7 @@
 
                     if (polygon.pointContainer.getNumChildren() === 0){
                       polygon.addPoint(pos);
+                      rectPos.push(pos);
                     } else if (polygon.pointContainer.getNumChildren() === 1){
                       x1 = polygon.pointContainer.getChildAt(0).x;
                       y1 = -polygon.pointContainer.getChildAt(0).y;
@@ -523,6 +546,18 @@
                       polygon.addPoint({x:x1, y:y2, z:0});
                       polygon.addPoint({x:x2, y:y2, z:0});
                       polygon.addPoint({x:x2, y:y1, z:0});
+
+                      rectPos.push({x:x1, y:y2, z:0});
+                      rectPos.push({x:x2, y:y2, z:0});
+                      rectPos.push({x:x2, y:y1, z:0});
+
+                      addToObjList({
+                        type: document.querySelector('input[name="objType"]:checked').value,
+                        shape: document.querySelector('input[name="shapeType"]:checked').value,
+                        points: rectPos
+                      });
+
+                      rectPos = [];
 
                       addNewPolygon();
                     }
@@ -994,7 +1029,35 @@
 
       (function () {
         document.getElementById("newObj").addEventListener('click', addNewPolygon);
+        addToObjList({
+          type: document.querySelector('input[name="objType"]:checked').value,
+          shape: document.querySelector('input[name="shapeType"]:checked').value,
+          points: polyPos
+        });
+        polyPos = [];
       })();
+
+      function addToObjList(options) {
+        this.type = options.type;
+        this.shape = options.shape;
+        this.points = options.points;
+        this.radius = options.radius || 0;
+
+        if (this.radius === 0){
+          objList.push({
+            type: this.type,
+            shape: this.shape,
+            points: this.points
+          });
+        }else {
+          objList.push({
+            type: this.type,
+            shape: this.shape,
+            points: this.points,
+            radius: this.radius
+          });
+        }
+      }
     }
 
   </script>
