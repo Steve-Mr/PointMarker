@@ -21,7 +21,6 @@
   <script type="text/javascript" src="https://static.robotwebtools.org/ros2djs/current/ros2d.min.js"></script>
 
   <script type="text/javascript">
-    // comment
 
     /**
      * 坐标类
@@ -234,6 +233,10 @@
       let clickedPolygon = false;
       let selectedPointIndex = null;
 
+      // 记录没有设置半径时第一次点击坐标
+      let isRadiusUnsetClicked = false;
+      let coordCircle;
+
       let pointCallBack = function (type, event, index) {
         if (type === 'mousedown') {
           // 按住 shift 点击点则移除此点，未按住 shift 只选中此点
@@ -300,7 +303,7 @@
         // 此时 polygon 在 bitmap 上层
         // 并设置 polygon 的点/线段的大小/粗细
         if (polygon!==null) {
-          polygon.pointSize = bitmapW * 0.01;
+          polygon.pointSize = bitmapW * 0.01 * 0.5;
           polygon.lineSize = bitmapW * 0.01 * 0.5;
 
           // Add the polygon to the viewer
@@ -330,6 +333,8 @@
               stage.removeAllEventListeners();
               registerMouseHandlers();
 
+              addNewPolygon();
+
               switch (shapeRadio.value) {
                 case "circles":
                   break;
@@ -345,12 +350,12 @@
 
               }
 
-              // 需要更好的位置
-              document.getElementById("newObj").hidden = false;
             })
           }
         })
       }
+
+
 
       function registerMouseHandlers() {
         // 处理鼠标操作
@@ -422,31 +427,81 @@
 
                 switch (key){
                   case "circles":
-                    polygon.addPoint(pos);
-                    polygon.lineContainer.removeAllChildren();
+                    let radiusBox = document.getElementById("radiusBox");
+                    radiusBox.addEventListener('input', updatePoint);
+                    let buttonSave = document.getElementById("saveRadius");
+                    let prePointSize = polygon.pointSize;
+
+                    if (coordCircle){
+                      console.log("coord circle" + coordCircle.x);
+
+                    }
+
+                    if(!isRadiusUnsetClicked){
+                      coordCircle = pos;
+                      polygon.addPoint(pos);
+                      polygon.lineColor = createjs.Graphics.getRGB(100, 100, 255, 0);
+                      polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
+
+                      radiusBox.hidden = false;
+                      radiusBox.value = "";
+                      buttonSave.hidden = false;
+                      buttonSave.disabled = true;
+
+                      isRadiusUnsetClicked = true;
+                    }
+
+                    function updatePoint() {
+                      buttonSave.disabled = radiusBox.value.length === 0;
+                      buttonSave.addEventListener("click", createCircle);
+
+                      function createCircle() {
+                        polygon.remPoint(polygon.pointContainer.getNumChildren() -1);
+
+                        polygon.pointSize = parseFloat(radiusBox.value) === 0 ? prePointSize :  parseFloat(radiusBox.value) * 2;
+                        radiusBox.hidden = true;
+                        buttonSave.hidden = true;
+
+                        if (!isRadiusUnsetClicked) {
+                          pos = coordCircle;
+                        }
+                        polygon.addPoint(pos);
+                        polygon.pointSize = prePointSize;
+
+                        isRadiusUnsetClicked = false;
+
+                        buttonSave.removeEventListener("click",createCircle);
+                        radiusBox.removeEventListener("input", updatePoint);
+                      }
+
+                    }
+
                     break;
                   case "lines":
                     if (polygon.pointContainer.getNumChildren() !== 2){
                       polygon.addPoint(pos);
+                    } else {
+                      addNewPolygon();
+                      polygon.addPoint(pos);
                     }
                     break;
                   case "polygons":
+                    document.getElementById("newObj").hidden = false;
+                    console.log("polygon points " + polygon.pointContainer.getNumChildren());
                     polygon.addPoint(pos);
                     break;
                   case "polylines":
+                    document.getElementById("newObj").hidden = false;
                     points.push(pos);
+                    console.log("polyline points " + polygon.pointContainer.getNumChildren());
+
                     polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
                     if (polygon.pointContainer.getNumChildren() >= 2){
-
                       polygon.pointContainer.removeAllChildren();
                       polygon.lineContainer.removeAllChildren();
                       polygon.drawFill();
                       for (let i = 0; i < points.length; i++){
-                        polygon.addPoint({
-                          x:points[i].x,
-                          y:points[i].y,
-                          z:0
-                        });
+                        polygon.addPoint(points[i]);
                       }
                       polygon.lineContainer.removeChildAt(polygon.lineContainer.getNumChildren() -1);
                     }else{
@@ -459,10 +514,8 @@
                     console.log("point container length "+polygon.pointContainer.getNumChildren());
 
                     if (polygon.pointContainer.getNumChildren() === 0){
-                      // console.log(polygon.pointContainer.getNumChildren());
                       polygon.addPoint(pos);
                     } else if (polygon.pointContainer.getNumChildren() === 1){
-                      // console.log(polygon.pointContainer.getNumChildren());
                       x1 = polygon.pointContainer.getChildAt(0).x;
                       y1 = -polygon.pointContainer.getChildAt(0).y;
                       x2 = pos.x;
@@ -470,6 +523,8 @@
                       polygon.addPoint({x:x1, y:y2, z:0});
                       polygon.addPoint({x:x2, y:y2, z:0});
                       polygon.addPoint({x:x2, y:y1, z:0});
+
+                      addNewPolygon();
                     }
                     break;
                   default:
@@ -477,7 +532,7 @@
 
                 }
 
-                console.log(pos)
+                // console.log(pos)
                 let coord = geDisplayCoord(pos);
                 coords.push(coord);
 
@@ -558,8 +613,6 @@
         let path1 = new path({allPoints: coords, allLines: lines});
         result.paths.push(path1.toJSON());
 
-        // let paths = [];
-        // paths.push(path1);
         result.pathGroups.push(new pathGroup({paths: [path1]}).toJSON());
 
         console.log(JSON.stringify(result));
@@ -594,10 +647,10 @@
         }
 
         function updateTable(coords, index) {
-          console.log("update table " + index.toString())
+          // console.log("update table " + index.toString())
           calYaw(coords);
           for (let i = 0; i < coords.length; i++) {
-            console.log(coords[i].toString());
+            // console.log(coords[i].toString());
           }
           tableIndex = index + 2;
 
@@ -759,7 +812,7 @@
 
             }
 
-            console.log(coords[i].toJSONAlt());
+            // console.log(coords[i].toJSONAlt());
             console.log(httpRequest);
           }
 
@@ -929,21 +982,18 @@
         }
 
       }
+      function addNewPolygon() {
+        polygon = createPolygon(
+                getObjColor(
+                        document.querySelector('input[name="objType"]:checked').value
+                ));
+        stage.addChild(polygon);
+        stage.update();
+        points = [];
+      }
 
       (function () {
         document.getElementById("newObj").addEventListener('click', addNewPolygon);
-
-        function addNewPolygon() {
-          polygon = createPolygon(
-                  getObjColor(
-                          document.querySelector('input[name="objType"]:checked').value
-                  ));
-          stage.addChild(polygon);
-          stage.update();
-
-
-        }
-
       })();
     }
 
@@ -998,6 +1048,9 @@
   <div>
     <input type="radio" id="circles" name="shapeType" value="circles" disabled>
     <label for="circles">点</label>
+
+    <input type="text" id="radiusBox" placeholder="半径" hidden>
+    <button type="button" id="saveRadius" hidden>确定</button>
 
     <input type="radio" id="lines" name="shapeType" value="lines" disabled>
     <label for="lines">线</label>
