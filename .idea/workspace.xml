@@ -9,7 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="初步实现按照对象记录坐标等信息">
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="基本的信息展示&#10;初步实现条目的删除">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/mapObj.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapObj.jsp" afterDir="false" />
     </list>
@@ -216,7 +216,7 @@
       <workItem from="1657459880924" duration="1151000" />
       <workItem from="1657503236512" duration="16951000" />
       <workItem from="1657585715402" duration="17789000" />
-      <workItem from="1657671693839" duration="13781000" />
+      <workItem from="1657671693839" duration="21033000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
@@ -323,7 +323,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657634475168</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="基本的信息展示&#10;初步实现条目的删除">
+      <created>1657707405399</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1657707405400</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -363,7 +370,8 @@
     <MESSAGE value="完善地图预载对象显示" />
     <MESSAGE value="完善添加地图障碍物" />
     <MESSAGE value="初步实现按照对象记录坐标等信息" />
-    <option name="LAST_COMMIT_MESSAGE" value="初步实现按照对象记录坐标等信息" />
+    <MESSAGE value="基本的信息展示&#10;初步实现条目的删除" />
+    <option name="LAST_COMMIT_MESSAGE" value="基本的信息展示&#10;初步实现条目的删除" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -301,6 +301,7 @@
         // stage 添加地图对象，先添加的位于底部
         stage.addChild(bitmap);
         polygonIndex ++;
+        console.log("polygon index 1");
 
         // stage 自动刷新
         createjs.Ticker.framerate = 30;
@@ -318,6 +319,8 @@
           // Add the polygon to the viewer
           stage.addChild(polygon);
           polygonIndex ++;
+          console.log("polygon index 2");
+
           stage.update();
         }
         // Event listeners for mouse interaction with the stage
@@ -341,12 +344,15 @@
             shapeRadio.checked = false;
             shapeRadio.disabled = false;
             shapeRadio.addEventListener("change", function () {
-              preType = radio.value;
               archiveExistedPoly();
+              preType = radio.value;
+              console.log("pretype  ", preType.toString());
+
               stage.removeAllEventListeners();
               registerMouseHandlers();
 
               addNewPolygon();
+              document.getElementById("newObj").disabled = true;
 
               switch (shapeRadio.value) {
                 case "circles":
@@ -363,6 +369,7 @@
 
               }
               preShape = shapeRadio.value;
+              // shapeRadio.disabled = true;
 
             })
           }
@@ -379,8 +386,6 @@
           polyPos = [];
         }
       }
-
-
 
       function registerMouseHandlers() {
         // 处理鼠标操作
@@ -446,8 +451,6 @@
               }
               else if (stage.mouseInBounds === true && clickedPolygon === false) {
                 let pos = stage.globalToRos(event.stageX, event.stageY);
-
-                // console.log(document.querySelector('input[name="shapeType"]:checked').value.toString());
                 let key = document.querySelector('input[name="shapeType"]:checked').value;
 
                 switch (key){
@@ -455,13 +458,15 @@
                     let radiusBox = document.getElementById("radiusBox");
                     radiusBox.addEventListener('input', updatePoint);
                     let buttonSave = document.getElementById("saveRadius");
+                    buttonSave.addEventListener("click", createCircle);
                     let prePointSize = polygon.pointSize;
 
                     if(!isRadiusUnsetClicked){
                       coordCircle = pos;
+                      if (polygon.pointContainer.getNumChildren() !== 0){
+                        addNewPolygon();
+                      }
                       polygon.addPoint(pos);
-                      polygon.lineColor = createjs.Graphics.getRGB(100, 100, 255, 0);
-                      polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
 
                       radiusBox.hidden = false;
                       radiusBox.value = "";
@@ -473,35 +478,32 @@
 
                     function updatePoint() {
                       buttonSave.disabled = radiusBox.value.length === 0;
-                      buttonSave.addEventListener("click", createCircle);
-
-                      function createCircle() {
-                        polygon.remPoint(polygon.pointContainer.getNumChildren() -1);
-
-                        polygon.pointSize = parseFloat(radiusBox.value) === 0 ? prePointSize :  parseFloat(radiusBox.value) * 2;
-                        radiusBox.hidden = true;
-                        buttonSave.hidden = true;
-
-                        if (!isRadiusUnsetClicked) {
-                          pos = coordCircle;
-                        }
-                        polygon.addPoint(pos);
-                        polygon.pointSize = prePointSize;
-
-                        addToObjList({
-                          type: document.querySelector('input[name="objType"]:checked').value,
-                          shape: document.querySelector('input[name="shapeType"]:checked').value,
-                          points: [pos],
-                          radius: radiusBox.value
-                        })
-
-                        isRadiusUnsetClicked = false;
-
-                        buttonSave.removeEventListener("click",createCircle);
-                        radiusBox.removeEventListener("input", updatePoint);
-                      }
-
                     }
+
+                  function createCircle() {
+                    polygon.remPoint(polygon.pointContainer.getNumChildren() -1);
+
+                    polygon.pointSize = parseFloat(radiusBox.value) === 0 ? prePointSize :  parseFloat(radiusBox.value) * 2;
+                    radiusBox.hidden = true;
+                    buttonSave.hidden = true;
+
+                    if (!isRadiusUnsetClicked) {
+                      pos = coordCircle;
+                    }
+                    polygon.addPoint(pos);
+                    polygon.pointSize = prePointSize;
+
+                    addToObjList({
+                      type: document.querySelector('input[name="objType"]:checked').value,
+                      shape: document.querySelector('input[name="shapeType"]:checked').value,
+                      points: [pos],
+                      radius: radiusBox.value
+                    })
+                    isRadiusUnsetClicked = false;
+
+                    buttonSave.removeEventListener("click",createCircle);
+                    radiusBox.removeEventListener("input", updatePoint);
+                  }
 
                     break;
                   case "lines":
@@ -531,12 +533,15 @@
                     // console.log("polygon points " + polygon.pointContainer.getNumChildren());
                     polygon.addPoint(pos);
                     polyPos.push(pos);
+                    document.getElementById("newObj").disabled = false;
+                    document.getElementById("newObj").addEventListener('click', updateObj)
                     break;
                   case "polylines":
                     document.getElementById("newObj").hidden = false;
                     points.push(pos);
                     polyPos.push(pos);
-                    // console.log("polyline points " + polygon.pointContainer.getNumChildren());
+                    document.getElementById("newObj").disabled = false;
+                    document.getElementById("newObj").addEventListener('click', updateObj)
 
                     polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
                     if (polygon.pointContainer.getNumChildren() >= 2){
@@ -553,8 +558,6 @@
                     break;
                   case "rectangles":
                     let x1, x2, y1, y2;
-                    // console.log("is adding rectangles");
-                    // console.log("point container length "+polygon.pointContainer.getNumChildren());
 
                     if (polygon.pointContainer.getNumChildren() === 0){
                       polygon.addPoint(pos);
@@ -828,24 +831,6 @@
         document.getElementById("submitPoints").addEventListener('click', printObjInfo);
         function printObjInfo() {
           archiveExistedPoly();
-          // for (let obj of objList){
-          //   console.log(
-          //           "{" +
-          //           "type: " + obj.type.toString() +
-          //           ", shape: " + obj.shape.toString()
-          //   );
-          //   for (let point of obj.points){
-          //     console.log(
-          //             "x: " + point.x.toString() +
-          //             "y: " + point.y.toString()
-          //     );
-          //   }
-          //   if (obj.shape === "circles"){
-          //     console.log("radius :" + obj.radius.toString());
-          //   }
-          //   console.log("}")
-          //   console.log("====")
-          // }
 
           console.log("stage children num " + stage.getNumChildren().toString());
 
@@ -947,6 +932,7 @@
         let obj;
         let color;
         for (let key in mapObjs){
+          if (key.includes("World")) continue;
           obj = mapObjs[key];
           // color = getObjColor(key);
           for (let shape in obj){
@@ -973,6 +959,8 @@
               polygon.lineContainer.removeAllChildren();
               stage.addChild(polygon);
               polygonIndex ++;
+              console.log("polygon index 3");
+
 
               addToObjList({
                 type: type,
@@ -997,6 +985,7 @@
               }
               stage.addChild(polygon);
               polygonIndex ++;
+              console.log("polygon index 4");
 
               addToObjList({
                 type: type,
@@ -1020,6 +1009,8 @@
               }
               stage.addChild(polygon);
               polygonIndex ++;
+              console.log("polygon index 5");
+
 
               addToObjList({
                 type: type,
@@ -1053,9 +1044,12 @@
                 shape: objShape,
                 points: points
               })
+              console.log("pre draw " + type);
 
               stage.addChild(polygon);
               polygonIndex ++;
+              console.log("polygon index 6");
+
             }
             break;
           case "rectangles":
@@ -1078,6 +1072,8 @@
               })
               stage.addChild(polygon);
               polygonIndex ++;
+              console.log("polygon index 7");
+
             }
             break;
           default:
@@ -1113,23 +1109,24 @@
                 ));
         stage.addChild(polygon);
         polygonIndex ++;
+        console.log("polygon index 8");
+
         stage.update();
         points = [];
       }
 
-      (function () {
-
-        document.getElementById("newObj").addEventListener('click', updateObj);
-        function updateObj() {
-          addNewPolygon()
-          addToObjList({
-            type: document.querySelector('input[name="objType"]:checked').value,
-            shape: document.querySelector('input[name="shapeType"]:checked').value,
-            points: polyPos
-          });
-          polyPos = [];
-        }
-      })();
+      function updateObj() {
+        archiveExistedPoly();
+        addNewPolygon();
+        // addToObjList({
+        //   type: document.querySelector('input[name="objType"]:checked').value,
+        //   shape: document.querySelector('input[name="shapeType"]:checked').value,
+        //   points: polyPos
+        // });
+        polyPos = [];
+        document.getElementById("newObj").disabled = true;
+        document.getElementById("newObj").removeEventListener("click", updateObj);
+      }
 
       function addToObjList(options) {
         this.type = options.type;
@@ -1138,7 +1135,6 @@
         this.radius = options.radius || 0;
         this.stageIndex = polygonIndex;
 
-        console.log("stageindex " + polygonIndex);
 
         // 在屏幕上输出信息
         let table = document.getElementById("ptable");
@@ -1163,8 +1159,11 @@
         }
 
         function deleteRow() {
+          clearStage();
+          console.log("stageindex " + stage.getNumChildren());
+
           let index = button.parentNode.parentNode.rowIndex -1;
-          stage.removeChildAt(index + 2);
+          stage.removeChildAt(index + 1);
           table.deleteRow(index + 1);
           objList.splice(index, 1);
         }
@@ -1200,6 +1199,15 @@
 
           return pointString;
         }
+      }
+      function clearStage() {
+        for(let i = 1; i < stage.getNumChildren(); i++){
+          if (stage.getChildAt(i).pointContainer.getNumChildren() === 0){
+            stage.removeChildAt(i);
+            i--;
+          }
+        }
+        
       }
     }
 
