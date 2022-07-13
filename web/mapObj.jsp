@@ -352,7 +352,11 @@
               registerMouseHandlers();
 
               addNewPolygon();
+
               document.getElementById("newObj").disabled = true;
+              document.getElementById("newObj").hidden = true;
+              document.getElementById("finishObj").disabled = true;
+              document.getElementById("finishObj").hidden = true;
 
               switch (shapeRadio.value) {
                 case "circles":
@@ -366,7 +370,6 @@
                   break;
                 case "rectangles":
                   break;
-
               }
               preShape = shapeRadio.value;
               // shapeRadio.disabled = true;
@@ -530,18 +533,25 @@
                     break;
                   case "polygons":
                     document.getElementById("newObj").hidden = false;
+                    document.getElementById("finishObj").hidden = false;
                     // console.log("polygon points " + polygon.pointContainer.getNumChildren());
                     polygon.addPoint(pos);
                     polyPos.push(pos);
                     document.getElementById("newObj").disabled = false;
-                    document.getElementById("newObj").addEventListener('click', updateObj)
+                    document.getElementById("newObj").addEventListener('click', updateObj);
+                    document.getElementById("finishObj").disabled = false;
+                    document.getElementById("finishObj").addEventListener('click', finishObj)
                     break;
                   case "polylines":
                     document.getElementById("newObj").hidden = false;
+                    document.getElementById("finishObj").hidden = false;
+
                     points.push(pos);
                     polyPos.push(pos);
                     document.getElementById("newObj").disabled = false;
-                    document.getElementById("newObj").addEventListener('click', updateObj)
+                    document.getElementById("newObj").addEventListener('click', updateObj);
+                    document.getElementById("finishObj").disabled = false;
+                    document.getElementById("finishObj").addEventListener('click', finishObj)
 
                     polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
                     if (polygon.pointContainer.getNumChildren() >= 2){
@@ -1118,14 +1128,35 @@
       function updateObj() {
         archiveExistedPoly();
         addNewPolygon();
-        // addToObjList({
-        //   type: document.querySelector('input[name="objType"]:checked').value,
-        //   shape: document.querySelector('input[name="shapeType"]:checked').value,
-        //   points: polyPos
-        // });
         polyPos = [];
         document.getElementById("newObj").disabled = true;
         document.getElementById("newObj").removeEventListener("click", updateObj);
+      }
+
+      function finishObj(){
+        archiveExistedPoly();
+        polyPos = [];
+        document.getElementById("finishObj").disabled = true;
+        document.getElementById("newObj").disabled = true;
+        document.getElementById("finishObj").removeEventListener("click", finishObj);
+        document.getElementById("newObj").removeEventListener("click", updateObj);
+
+        document.getElementById("finishObj").hidden = true;
+        document.getElementById("newObj").hidden = true;
+        let radios = document.querySelectorAll('input[name="objType"]');
+        let shapeRadios = document.querySelectorAll('input[name="shapeType"]');
+
+        for (let radio of radios){
+          radio.checked = false;
+          radio.disabled = false;
+        }
+
+        for (let shapeRadio of shapeRadios){
+          shapeRadio.checked = false;
+          shapeRadio.disabled = true;
+        }
+
+        stage.removeAllEventListeners();
       }
 
       function addToObjList(options) {
@@ -1166,6 +1197,23 @@
           stage.removeChildAt(index + 1);
           table.deleteRow(index + 1);
           objList.splice(index, 1);
+          if (objList.length === 0){
+            let radios = document.querySelectorAll('input[name="objType"]');
+            let shapeRadios = document.querySelectorAll('input[name="shapeType"]');
+
+            for (let radio of radios){
+              radio.checked = false;
+              radio.disabled = false;
+            }
+
+            for (let shapeRadio of shapeRadios){
+              shapeRadio.checked = false;
+              shapeRadio.disabled = true;
+            }
+
+            stage.removeAllEventListeners();
+
+          }
         }
 
         if (this.radius === 0){
@@ -1277,11 +1325,16 @@
 
     <input type="radio" id="rectangles" name="shapeType" value="rectangles" disabled>
     <label for="rectangles">方形</label>
+
+    <button id="newObj" type="button" hidden>
+      绘制新图形
+    </button>
+
+    <button id="finishObj" type="button" hidden>
+      完成当前绘制
+    </button>
   </div>
 </form>
-<button id="newObj" type="button" hidden>
-  绘制新图形
-</button>
 <canvas id="map" width="800" height="800" style="border:1px solid #f11010;"></canvas>
 <p id="points"></p>
 <table id="ptable" hidden>
