@@ -9,7 +9,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="完善地图预载对象显示">
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="初步实现按照对象记录坐标等信息">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/mapObj.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapObj.jsp" afterDir="false" />
     </list>
@@ -215,7 +215,8 @@
       <workItem from="1657413619148" duration="16459000" />
       <workItem from="1657459880924" duration="1151000" />
       <workItem from="1657503236512" duration="16951000" />
-      <workItem from="1657585715402" duration="14079000" />
+      <workItem from="1657585715402" duration="17789000" />
+      <workItem from="1657671693839" duration="13781000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
@@ -308,7 +309,21 @@
       <option name="project" value="LOCAL" />
       <updated>1657445882560</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="完善添加地图障碍物">
+      <created>1657632786002</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1657632786002</updated>
+    </task>
+    <task id="LOCAL-00015" summary="初步实现按照对象记录坐标等信息">
+      <created>1657634475168</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1657634475168</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -346,7 +361,9 @@
     <MESSAGE value="优化 json 处理方式" />
     <MESSAGE value="修正表格删除键功能错误问题" />
     <MESSAGE value="完善地图预载对象显示" />
-    <option name="LAST_COMMIT_MESSAGE" value="完善地图预载对象显示" />
+    <MESSAGE value="完善添加地图障碍物" />
+    <MESSAGE value="初步实现按照对象记录坐标等信息" />
+    <option name="LAST_COMMIT_MESSAGE" value="初步实现按照对象记录坐标等信息" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

@@ -220,6 +220,9 @@
       let lines = [];
       let points = [];
 
+      let preType, preShape;
+      let polygonIndex = 0;
+
       // 缩放视图
       let zoomView = new ROS2D.ZoomView({
         rootObject: stage
@@ -297,6 +300,7 @@
 
         // stage 添加地图对象，先添加的位于底部
         stage.addChild(bitmap);
+        polygonIndex ++;
 
         // stage 自动刷新
         createjs.Ticker.framerate = 30;
@@ -312,8 +316,8 @@
           polygon.lineSize = bitmapW * 0.01 * 0.5;
 
           // Add the polygon to the viewer
-          stage.addChild(new createjs.Shape());
           stage.addChild(polygon);
+          polygonIndex ++;
           stage.update();
         }
         // Event listeners for mouse interaction with the stage
@@ -326,15 +330,19 @@
       let radios = document.querySelectorAll('input[name="objType"]');
       for (const radio of radios) {
         radio.addEventListener("change", function () {
-          console.log(radio.value);
+          // console.log(radio.value);
           let color = getObjColor(radio.value);
           polygon.pointColor = color;
           polygon.lineColor = color;
           polygon.fillColor = color;
           let shapeRadios = document.querySelectorAll('input[name="shapeType"]');
+          stage.removeAllEventListeners();
           for (let shapeRadio of shapeRadios){
+            shapeRadio.checked = false;
             shapeRadio.disabled = false;
             shapeRadio.addEventListener("change", function () {
+              preType = radio.value;
+              archiveExistedPoly();
               stage.removeAllEventListeners();
               registerMouseHandlers();
 
@@ -354,10 +362,22 @@
                   break;
 
               }
+              preShape = shapeRadio.value;
 
             })
           }
         })
+      }
+
+      function archiveExistedPoly() {
+        if (polyPos.length !== 0){
+          addToObjList({
+            type: preType? preType : document.querySelector('input[name="objType"]:checked').value,
+            shape: preShape? preShape : document.querySelector('input[name="shapeType"]:checked').value,
+            points: polyPos
+          });
+          polyPos = [];
+        }
       }
 
 
@@ -427,7 +447,7 @@
               else if (stage.mouseInBounds === true && clickedPolygon === false) {
                 let pos = stage.globalToRos(event.stageX, event.stageY);
 
-                console.log(document.querySelector('input[name="shapeType"]:checked').value.toString());
+                // console.log(document.querySelector('input[name="shapeType"]:checked').value.toString());
                 let key = document.querySelector('input[name="shapeType"]:checked').value;
 
                 switch (key){
@@ -436,11 +456,6 @@
                     radiusBox.addEventListener('input', updatePoint);
                     let buttonSave = document.getElementById("saveRadius");
                     let prePointSize = polygon.pointSize;
-
-                    if (coordCircle){
-                      console.log("coord circle" + coordCircle.x);
-
-                    }
 
                     if(!isRadiusUnsetClicked){
                       coordCircle = pos;
@@ -492,22 +507,28 @@
                   case "lines":
                     if (polygon.pointContainer.getNumChildren() !== 2){
                       linesPos.push(pos);
+                      console.log("linepos pushed" + pos.x);
                       polygon.addPoint(pos);
+
+                      if (polygon.pointContainer.getNumChildren() === 2){
+                        addToObjList({
+                          type: document.querySelector('input[name="objType"]:checked').value,
+                          shape: document.querySelector('input[name="shapeType"]:checked').value,
+                          points: linesPos,
+                        })
+                        linesPos = [];
+                      }
                     } else {
                       addNewPolygon();
-                      addToObjList({
-                        type: document.querySelector('input[name="objType"]:checked').value,
-                        shape: document.querySelector('input[name="shapeType"]:checked').value,
-                        points: linesPos,
-                      })
-                      linesPos = [];
-                      polygon.addPoint(pos);
                       linesPos.push(pos);
+                      console.log("linepos pushed" + pos.x);
+                      polygon.addPoint(pos);
+
                     }
                     break;
                   case "polygons":
                     document.getElementById("newObj").hidden = false;
-                    console.log("polygon points " + polygon.pointContainer.getNumChildren());
+                    // console.log("polygon points " + polygon.pointContainer.getNumChildren());
                     polygon.addPoint(pos);
                     polyPos.push(pos);
                     break;
@@ -515,7 +536,7 @@
                     document.getElementById("newObj").hidden = false;
                     points.push(pos);
                     polyPos.push(pos);
-                    console.log("polyline points " + polygon.pointContainer.getNumChildren());
+                    // console.log("polyline points " + polygon.pointContainer.getNumChildren());
 
                     polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
                     if (polygon.pointContainer.getNumChildren() >= 2){
@@ -532,8 +553,8 @@
                     break;
                   case "rectangles":
                     let x1, x2, y1, y2;
-                    console.log("is adding rectangles");
-                    console.log("point container length "+polygon.pointContainer.getNumChildren());
+                    // console.log("is adding rectangles");
+                    // console.log("point container length "+polygon.pointContainer.getNumChildren());
 
                     if (polygon.pointContainer.getNumChildren() === 0){
                       polygon.addPoint(pos);
@@ -547,9 +568,7 @@
                       polygon.addPoint({x:x2, y:y2, z:0});
                       polygon.addPoint({x:x2, y:y1, z:0});
 
-                      rectPos.push({x:x1, y:y2, z:0});
                       rectPos.push({x:x2, y:y2, z:0});
-                      rectPos.push({x:x2, y:y1, z:0});
 
                       addToObjList({
                         type: document.querySelector('input[name="objType"]:checked').value,
@@ -664,131 +683,131 @@
       function printCoords(coords, index){
         pTable.hidden = false;
 
-        // 表格中已经存在两行，所以标记点在表格中的对应位置需要 +2
-        let tableIndex;
-        let tr, cell0, cell1, cell2, cell3, cell4;
-
-        // 当一个点发生变动时需要更新附近点
-        if (index === 0) {
-          if (coords.length > 1){
-            updateTable(coords, index);
-            updateTable(coords, (coords.length - 1));
-          }else{
-            updateTable(coords, index);
-          }
-        } else {
-          updateTable(coords, index);
-          updateTable(coords, index - 1);
-        }
-
-        function updateTable(coords, index) {
-          // console.log("update table " + index.toString())
-          calYaw(coords);
-          for (let i = 0; i < coords.length; i++) {
-            // console.log(coords[i].toString());
-          }
-          tableIndex = index + 2;
-
-          // 标记点位置在最后 —— 需要添加显示该点的行
-          // 否则显示该点的行
-          // cell0: 类型
-          // cell1: 坐标
-          // cell2: 偏向角
-          // cell3: 名字——允许手动编辑
-          if (tableIndex === pTable.rows.length){
-            tr = pTable.insertRow(tableIndex);
-            cell0 = tr.insertCell(0);
-            cell1 = tr.insertCell(1);
-            cell2 = tr.insertCell(2);
-            cell3 = tr.insertCell(3);
-            cell4 = tr.insertCell(4);
-          }else{
-            tr = pTable.rows[tableIndex];
-            cell0 = tr.cells[0];
-            cell1 = tr.cells[1];
-            cell2 = tr.cells[2];
-            cell3 = tr.cells[3];
-            cell4 = tr.cells[4];
-          }
-
-          switch (coords[index].type) {
-            case "0":
-              cell0.innerHTML = "初始点";
-              break;
-            case "1":
-              cell0.innerHTML = "充电点";
-              break;
-            case "2":
-              cell0.innerHTML = "导航点";
-              break;
-            case "3":
-              cell0.innerHTML = "RFID点";
-              break;
-            case "4":
-              cell0.innerHTML = "注水点";
-              break;
-            case "5":
-              cell0.innerHTML = "排水点";
-              break;
-            default:
-              cell0.innerHTML = "未知/错误";
-              break;
-          }
-
-          cell1.innerHTML = coords[index].x.toString() + ", " + coords[index].y.toString();
-
-          cell2.innerHTML = coords[index].yaw.toString();
-
-          let element;
-          if (cell3.childNodes.length !== 0) {
-            element = cell3.childNodes[0];
-          }else{
-            element = document.createElement("input");
-            element.type = "text";
-            element.name = "pnameTextbox";
-            element.addEventListener('input', updateValue);
-          }
-
-          cell3.appendChild(element);
-          element.value = coords[index].name;
-          console.log("===");
-
-          let button;
-          if (cell4.childNodes.length !== 0){
-            button = cell4.childNodes[0];
-          }else{
-            button = document.createElement("button");
-            button.innerText = "delete";
-            cell4.appendChild(button);
-            button.addEventListener("click", deleteRow);
-          }
-
-          function updateValue() {
-            // 修改输入框内容时删除键变为保存键
-            // 只有输入框中值不为空才可以保存
-
-            button.innerText = "save";
-            button.disabled = element.value.length === 0;
-            button.removeEventListener("click", deleteRow);
-            button.addEventListener("click", makeChange);
-
-            function makeChange() {
-              if (element.value.length === 0) {
-                alert("please input point name");
-                return;
-              }
-              coords[index].name = element.value;
-              button.innerText = "delete";
-              button.removeEventListener("click", makeChange);
-              button.addEventListener("click", deleteRow);
-            }
-          }
-
-          function deleteRow() {
-            let index = button.parentNode.parentNode.rowIndex - 2;
-            deleteRowFun(index);
-          }
-        }
+        // // 表格中已经存在两行，所以标记点在表格中的对应位置需要 +2
+        // let tableIndex;
+        // let tr, cell0, cell1, cell2, cell3, cell4;
+        //
+        // // 当一个点发生变动时需要更新附近点
+        // if (index === 0) {
+        //   if (coords.length > 1){
+        //     updateTable(coords, index);
+        //     updateTable(coords, (coords.length - 1));
+        //   }else{
+        //     updateTable(coords, index);
+        //   }
+        // } else {
+        //   updateTable(coords, index);
+        //   updateTable(coords, index - 1);
+        // }
+        //
+        // function updateTable(coords, index) {
+        //   // console.log("update table " + index.toString())
+        //   calYaw(coords);
+        //   for (let i = 0; i < coords.length; i++) {
+        //     // console.log(coords[i].toString());
+        //   }
+        //   tableIndex = index + 2;
+        //
+        //   // 标记点位置在最后 —— 需要添加显示该点的行
+        //   // 否则显示该点的行
+        //   // cell0: 类型
+        //   // cell1: 坐标
+        //   // cell2: 偏向角
+        //   // cell3: 名字——允许手动编辑
+        //   if (tableIndex === pTable.rows.length){
+        //     tr = pTable.insertRow(tableIndex);
+        //     cell0 = tr.insertCell(0);
+        //     cell1 = tr.insertCell(1);
+        //     cell2 = tr.insertCell(2);
+        //     cell3 = tr.insertCell(3);
+        //     cell4 = tr.insertCell(4);
+        //   }else{
+        //     tr = pTable.rows[tableIndex];
+        //     cell0 = tr.cells[0];
+        //     cell1 = tr.cells[1];
+        //     cell2 = tr.cells[2];
+        //     cell3 = tr.cells[3];
+        //     cell4 = tr.cells[4];
+        //   }
+        //
+        //   switch (coords[index].type) {
+        //     case "0":
+        //       cell0.innerHTML = "初始点";
+        //       break;
+        //     case "1":
+        //       cell0.innerHTML = "充电点";
+        //       break;
+        //     case "2":
+        //       cell0.innerHTML = "导航点";
+        //       break;
+        //     case "3":
+        //       cell0.innerHTML = "RFID点";
+        //       break;
+        //     case "4":
+        //       cell0.innerHTML = "注水点";
+        //       break;
+        //     case "5":
+        //       cell0.innerHTML = "排水点";
+        //       break;
+        //     default:
+        //       cell0.innerHTML = "未知/错误";
+        //       break;
+        //   }
+        //
+        //   cell1.innerHTML = coords[index].x.toString() + ", " + coords[index].y.toString();
+        //
+        //   cell2.innerHTML = coords[index].yaw.toString();
+        //
+        //   let element;
+        //   if (cell3.childNodes.length !== 0) {
+        //     element = cell3.childNodes[0];
+        //   }else{
+        //     element = document.createElement("input");
+        //     element.type = "text";
+        //     element.name = "pnameTextbox";
+        //     element.addEventListener('input', updateValue);
+        //   }
+        //
+        //   cell3.appendChild(element);
+        //   element.value = coords[index].name;
+        //   // console.log("===");
+        //
+        //   let button;
+        //   if (cell4.childNodes.length !== 0){
+        //     button = cell4.childNodes[0];
+        //   }else{
+        //     button = document.createElement("button");
+        //     button.innerText = "delete";
+        //     cell4.appendChild(button);
+        //     button.addEventListener("click", deleteRow);
+        //   }
+        //
+        //   function updateValue() {
+        //     // 修改输入框内容时删除键变为保存键
+        //     // 只有输入框中值不为空才可以保存
+        //
+        //     button.innerText = "save";
+        //     button.disabled = element.value.length === 0;
+        //     button.removeEventListener("click", deleteRow);
+        //     button.addEventListener("click", makeChange);
+        //
+        //     function makeChange() {
+        //       if (element.value.length === 0) {
+        //         alert("please input point name");
+        //         return;
+        //       }
+        //       coords[index].name = element.value;
+        //       button.innerText = "delete";
+        //       button.removeEventListener("click", makeChange);
+        //       button.addEventListener("click", deleteRow);
+        //     }
+        //   }
+        //
+        //   function deleteRow() {
+        //     let index = button.parentNode.parentNode.rowIndex - 2;
+        //     deleteRowFun(index);
+        //   }
+        // }
 
         document.getElementById("submitPoints").hidden = false;
       }
@@ -806,81 +825,106 @@
 
       // 点击提交按钮像服务器提交已标记点/线段/路径/路径组信息
       (function() {
-        let httpRequest;
-        document.getElementById("submitPoints").addEventListener('click', makeRequestAlt);
+        document.getElementById("submitPoints").addEventListener('click', printObjInfo);
+        function printObjInfo() {
+          archiveExistedPoly();
+          // for (let obj of objList){
+          //   console.log(
+          //           "{" +
+          //           "type: " + obj.type.toString() +
+          //           ", shape: " + obj.shape.toString()
+          //   );
+          //   for (let point of obj.points){
+          //     console.log(
+          //             "x: " + point.x.toString() +
+          //             "y: " + point.y.toString()
+          //     );
+          //   }
+          //   if (obj.shape === "circles"){
+          //     console.log("radius :" + obj.radius.toString());
+          //   }
+          //   console.log("}")
+          //   console.log("====")
+          // }
 
-        function makeRequest() {
+          console.log("stage children num " + stage.getNumChildren().toString());
 
-          httpRequest = new XMLHttpRequest();
-
-          if (!httpRequest) {
-            alert('Giving up :( Cannot create an XML HTTP instance');
-            return false;
-          }
-          httpRequest.onreadystatechange = alertContents;
-          httpRequest.open('POST', 'https://0.0.0.0/test.html/gs-robot/cmd/generate_graph_path');
-          httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
-          httpRequest.send(generateResultJSON());
-
-          console.log(httpRequest);
         }
+        <%--let httpRequest;--%>
+        <%--document.getElementById("submitPoints").addEventListener('click', makeRequestAlt);--%>
 
-        function makeRequestAlt() {
-          // 在服务器上线后需要大量修改
+        <%--function makeRequest() {--%>
 
-          httpRequest = new XMLHttpRequest();
-          if (!httpRequest) {
-            alert('Giving up :( Cannot create an XML HTTP instance');
-            return false;
-          }
-          httpRequest.open('POST', 'https://127.0.0.1/test.html/gs-robot/cmd/generate_graph_path');
-          httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
-          for (let i = 0; i < coords.length; i++){
+        <%--  httpRequest = new XMLHttpRequest();--%>
 
-            coords[i].mapName = "${requestScope.name}";
-            // httpRequest.send(coords[i].toJSONAlt());
-            if (i === coords.length - 1){
-              httpRequest.onreadystatechange = alertContents;
-              httpRequest.send(coords[i].toJSONAlt());
-            }else{
-              // httpRequest.onreadystatechange = alertContentsAlt;
+        <%--  if (!httpRequest) {--%>
+        <%--    alert('Giving up :( Cannot create an XML HTTP instance');--%>
+        <%--    return false;--%>
+        <%--  }--%>
+        <%--  httpRequest.onreadystatechange = alertContents;--%>
+        <%--  httpRequest.open('POST', 'https://0.0.0.0/test.html/gs-robot/cmd/generate_graph_path');--%>
+        <%--  httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')--%>
+        <%--  httpRequest.send(generateResultJSON());--%>
 
-            }
+        <%--  console.log(httpRequest);--%>
+        <%--}--%>
 
-            // console.log(coords[i].toJSONAlt());
-            console.log(httpRequest);
-          }
+        <%--function makeRequestAlt() {--%>
+        <%--  // 在服务器上线后需要大量修改--%>
 
-          <%--for (let i = 0; i < coords.length; i++){--%>
-          <%--    if (i === coords.length - 1){--%>
-          <%--        httpRequest.onreadystatechange = alertContents;--%>
-          <%--    }else{--%>
-          <%--        httpRequest.onreadystatechange = alertContentsAlt;--%>
-          <%--    }--%>
-          <%--    coords[i].mapName = "${requestScope.name}";--%>
-          <%--    httpRequest.send(coords[i].toJSONAlt());--%>
-          <%--}--%>
-        }
+        <%--  httpRequest = new XMLHttpRequest();--%>
+        <%--  if (!httpRequest) {--%>
+        <%--    alert('Giving up :( Cannot create an XML HTTP instance');--%>
+        <%--    return false;--%>
+        <%--  }--%>
+        <%--  httpRequest.open('POST', 'https://127.0.0.1/test.html/gs-robot/cmd/generate_graph_path');--%>
+        <%--  httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')--%>
+        <%--  for (let i = 0; i < coords.length; i++){--%>
 
-        function alertContents() {
-          if (httpRequest.readyState === XMLHttpRequest.DONE) {
-            if (httpRequest.status === 200) {
-              alert(httpRequest.responseText);
-            } else {
-              alert('sent');
-            }
-          }
-        }
+        <%--    coords[i].mapName = "${requestScope.name}";--%>
+        <%--    // httpRequest.send(coords[i].toJSONAlt());--%>
+        <%--    if (i === coords.length - 1){--%>
+        <%--      httpRequest.onreadystatechange = alertContents;--%>
+        <%--      httpRequest.send(coords[i].toJSONAlt());--%>
+        <%--    }else{--%>
+        <%--      // httpRequest.onreadystatechange = alertContentsAlt;--%>
 
-        function alertContentsAlt() {
-          if (httpRequest.readyState === XMLHttpRequest.DONE) {
-            if (httpRequest.status === 200) {
-              alert("error occurred");
-              // 这里应该放到 else 框体中，为测试用进行对调
-            } else {
-            }
-          }
-        }
+        <%--    }--%>
+
+        <%--    // console.log(coords[i].toJSONAlt());--%>
+        <%--    console.log(httpRequest);--%>
+        <%--  }--%>
+
+        <%--  &lt;%&ndash;for (let i = 0; i < coords.length; i++){&ndash;%&gt;--%>
+        <%--  &lt;%&ndash;    if (i === coords.length - 1){&ndash;%&gt;--%>
+        <%--  &lt;%&ndash;        httpRequest.onreadystatechange = alertContents;&ndash;%&gt;--%>
+        <%--  &lt;%&ndash;    }else{&ndash;%&gt;--%>
+        <%--  &lt;%&ndash;        httpRequest.onreadystatechange = alertContentsAlt;&ndash;%&gt;--%>
+        <%--  &lt;%&ndash;    }&ndash;%&gt;--%>
+        <%--  &lt;%&ndash;    coords[i].mapName = "${requestScope.name}";&ndash;%&gt;--%>
+        <%--  &lt;%&ndash;    httpRequest.send(coords[i].toJSONAlt());&ndash;%&gt;--%>
+        <%--  &lt;%&ndash;}&ndash;%&gt;--%>
+        <%--}--%>
+
+        <%--function alertContents() {--%>
+        <%--  if (httpRequest.readyState === XMLHttpRequest.DONE) {--%>
+        <%--    if (httpRequest.status === 200) {--%>
+        <%--      alert(httpRequest.responseText);--%>
+        <%--    } else {--%>
+        <%--      alert('sent');--%>
+        <%--    }--%>
+        <%--  }--%>
+        <%--}--%>
+
+        <%--function alertContentsAlt() {--%>
+        <%--  if (httpRequest.readyState === XMLHttpRequest.DONE) {--%>
+        <%--    if (httpRequest.status === 200) {--%>
+        <%--      alert("error occurred");--%>
+        <%--      // 这里应该放到 else 框体中，为测试用进行对调--%>
+        <%--    } else {--%>
+        <%--    }--%>
+        <%--  }--%>
+        <%--}--%>
       })();
 
       function createPolygon(color){
@@ -904,21 +948,21 @@
         let color;
         for (let key in mapObjs){
           obj = mapObjs[key];
-          color = getObjColor(key);
-          for (let key in obj){
-            drawObj(key, obj[key], color);
+          // color = getObjColor(key);
+          for (let shape in obj){
+            drawObj(shape, obj[shape], key);
           }
         }
       }
 
       // 根据坐标等参数在地图上绘制特殊对象
-      function drawObj(objShape, obj, color) {
+      function drawObj(objShape, obj, type) {
 
         switch (objShape.toString()) {
           case "circles":
             for (let i = 0; i < obj.length; i++){
               // 使用 polygon 方法能够更容易将来实现拖动等操作
-              let polygon = createPolygon(color);
+              let polygon = createPolygon(getObjColor(type));
               polygon.pointSize = obj[i].r;
               let convertedPoint = getOnStageCoord(obj[i]);
               let pos = {
@@ -928,11 +972,20 @@
               polygon.addPoint(pos);
               polygon.lineContainer.removeAllChildren();
               stage.addChild(polygon);
+              polygonIndex ++;
+
+              addToObjList({
+                type: type,
+                shape: objShape,
+                points: [pos],
+                radius: obj[i].r
+              })
             }
             break;
           case "lines":
             for (let i = 0; i < obj.length; i++){
-              let polygon = createPolygon(color);
+              let polygon = createPolygon(getObjColor(type));
+              let points = [];
               for (let j = 0; j < obj[i].length; j++){
                 let convertedPoint = getOnStageCoord(obj[i][j]);
                 let pos = {
@@ -940,12 +993,22 @@
                   y: convertedPoint.y,
                   z: 0};
                 polygon.addPoint(pos);
+                points.push(pos);
               }
               stage.addChild(polygon);
+              polygonIndex ++;
+
+              addToObjList({
+                type: type,
+                shape: objShape,
+                points: points
+              })
+
             }
             break;
           case "polygons":
             for (let i = 0; i < obj.length; i++){
+              let points = [];
               for (let j = 0; j < obj[i].length; j++){
                 let convertedPoint = getOnStageCoord(obj[i][j]);
                 let pos = {
@@ -953,14 +1016,25 @@
                   y: convertedPoint.y,
                   z: 0};
                 polygon.addPoint(pos);
+                points.push(pos);
               }
               stage.addChild(polygon);
+              polygonIndex ++;
+
+              addToObjList({
+                type: type,
+                shape: objShape,
+                points: points
+              })
             }
             break;
           case "polylines":
             for (let i = 0; i < obj.length; i++){
-              let polygon = createPolygon(color);
+              let polygon = createPolygon(getObjColor(type));
               polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
+
+              let points = [];
+
               for (let j = 0; j < obj[i].length; j++){
                 let convertedPoint = getOnStageCoord(obj[i][j]);
                 let pos = {
@@ -968,16 +1042,25 @@
                   y: convertedPoint.y,
                   z: 0};
                 polygon.addPoint(pos);
+                points.push(pos);
               }
               if (obj[i].length >= 3){
                 polygon.lineContainer.removeChildAt(obj[i].length - 1);
               }
+
+              addToObjList({
+                type: type,
+                shape: objShape,
+                points: points
+              })
+
               stage.addChild(polygon);
+              polygonIndex ++;
             }
             break;
           case "rectangles":
             for (let i = 0; i < obj.length; i++){
-              let polygon = createPolygon(color);
+              let polygon = createPolygon(getObjColor(type));
               let convertedPoint1 = getOnStageCoord(obj[i][0]);
               let convertedPoint2 = getOnStageCoord(obj[i][1]);
               let x1 = convertedPoint1.x;
@@ -988,7 +1071,13 @@
               polygon.addPoint({x:x1, y:y2, z:0});
               polygon.addPoint({x:x2, y:y2, z:0});
               polygon.addPoint({x:x2, y:y1, z:0});
+              addToObjList({
+                type: type,
+                shape: objShape,
+                points: [obj[i][0], obj[i][1]]
+              })
               stage.addChild(polygon);
+              polygonIndex ++;
             }
             break;
           default:
@@ -1023,18 +1112,23 @@
                         document.querySelector('input[name="objType"]:checked').value
                 ));
         stage.addChild(polygon);
+        polygonIndex ++;
         stage.update();
         points = [];
       }
 
       (function () {
-        document.getElementById("newObj").addEventListener('click', addNewPolygon);
-        addToObjList({
-          type: document.querySelector('input[name="objType"]:checked').value,
-          shape: document.querySelector('input[name="shapeType"]:checked').value,
-          points: polyPos
-        });
-        polyPos = [];
+
+        document.getElementById("newObj").addEventListener('click', updateObj);
+        function updateObj() {
+          addNewPolygon()
+          addToObjList({
+            type: document.querySelector('input[name="objType"]:checked').value,
+            shape: document.querySelector('input[name="shapeType"]:checked').value,
+            points: polyPos
+          });
+          polyPos = [];
+        }
       })();
 
       function addToObjList(options) {
@@ -1042,20 +1136,69 @@
         this.shape = options.shape;
         this.points = options.points;
         this.radius = options.radius || 0;
+        this.stageIndex = polygonIndex;
+
+        console.log("stageindex " + polygonIndex);
+
+        // 在屏幕上输出信息
+        let table = document.getElementById("ptable");
+        table.hidden = false;
+        let tr = table.insertRow(table.rows.length);
+        let cell0 = tr.insertCell(0);
+        let cell1 = tr.insertCell(1);
+        let cell2 = tr.insertCell(2);
+        let cell3 = tr.insertCell(3);
+
+        cell0.innerText = this.type;
+        cell1.innerText = this.shape;
+        cell2.innerText = getXY(this.points, this.radius);
+        let button;
+        if (cell3.childNodes.length !== 0){
+          button = cell3.childNodes[0];
+        }else{
+          button = document.createElement("button");
+          button.innerText = "delete";
+          cell3.appendChild(button);
+          button.addEventListener("click", deleteRow);
+        }
+
+        function deleteRow() {
+          let index = button.parentNode.parentNode.rowIndex -1;
+          stage.removeChildAt(index + 2);
+          table.deleteRow(index + 1);
+          objList.splice(index, 1);
+        }
 
         if (this.radius === 0){
           objList.push({
             type: this.type,
             shape: this.shape,
-            points: this.points
+            points: this.points,
+            stageIndex: this.stageIndex
           });
         }else {
           objList.push({
             type: this.type,
             shape: this.shape,
             points: this.points,
-            radius: this.radius
+            radius: this.radius,
+            stageIndex: this.stageIndex
           });
+        }
+
+        function getXY(points, radius) {
+          let pointString = "";
+          if (radius === 0){
+            for (let point of points){
+              pointString += " {x: "+ point.x + ", y: " + point.y + "}";
+            }
+          }else{
+            for (let point of points){
+              pointString += " {x: "+ point.x + ", y: " + point.y + ", r: " + radius +"}";
+            }
+          }
+
+          return pointString;
         }
       }
     }
@@ -1136,19 +1279,15 @@
 <table id="ptable" hidden>
   <thead>
   <tr>
-    <th colspan="4">已标记点</th>
-  </tr>
-  <tr>
     <th>类型</th>
+    <th>形状</th>
     <th>坐标</th>
-    <th>偏向角</th>
-    <th>名字</th>
   </tr>
   </thead>
   <tbody>
   </tbody>
 </table>
-<button id="submitPoints" type="button" hidden>
+<button id="submitPoints" type="button">
   提交
 </button>
 
