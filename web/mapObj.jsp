@@ -30,11 +30,12 @@
        * status: 数据获取是否成功，失败则返回前一页
        * url: 地图的图片链接
        * resolution, originX, originY: 同地图定义
+       * json: 获取到的障碍物数据
        * */
-
       let originX = 0;
       let originY = 0;
 
+      // 数据获取有问题，回到上一页
       if (!${requestScope.status}){
         alert("error occurred");
         history.back();
@@ -46,19 +47,27 @@
 
       let canvas = document.getElementById("map");    // 展示地图
       let stage = new createjs.Stage(canvas);
-      let table = document.getElementById("ptable"); // 已标记点表格
+      let table = document.getElementById("ptable"); // 障碍物表格
 
       let bitmap = new createjs.Bitmap(${requestScope.url});
       bitmap.scaleX = ${requestScope.resolution};
       bitmap.scaleY = ${requestScope.resolution};
 
-      // 标记点和线段数组
-      // let points = [];
-
+      /**
+       * 这里由于 polygon 有多重意义容易产生混淆
+       * 故作出说明
+       * 当 polygon 为障碍物的形状，即「多边形」意时，则称为「多边形」
+       * 当 polygon 为绘制各种形状的工具时，则称为「容器」/polygon
+       * */
+      // 标记 多边形/折线 时需要一个结束标志
+      // buttonDrawNew: 结束当前图形绘制，开始下一个
+      // buttonFinishCurrent： 结束当前图形绘制
       let buttonDrawNew = document.getElementById("newObj");
       let buttonFinishCurrent = document.getElementById("finishObj");
+      // 提交结果按钮
       let buttonSubmit = document.getElementById("submitPoints");
 
+      // 用来记录类型和形状的状态，避免在绘制 多边形/折线 时因切换种类/形状造成记录错误
       let preType, preShape;
 
       // 缩放视图
@@ -70,15 +79,16 @@
         rootObject: stage
       });
 
-      // 鼠标点击 polygon 时的回调函数
+      // 鼠标点击容器时的回调函数
       let clickedPolygon = false;
       let selectedPointIndex = null;
 
-      // 记录没有设置半径时第一次点击坐标
+      // 记录在标记 圆 且没有设置半径时第一次点击坐标
       let isRadiusUnsetClicked = false;
       let circlePos;
 
-      let objList = [];
+      let objList = [];   // 所有障碍物对象列表
+      // 线段/方形/多边形/折线 需要记录点列表
       let linesPos = [];
       let rectPos = [];
       let polyPos = [];
@@ -93,6 +103,7 @@
       let lineCallBack = function (type, event, index) {
       }
 
+      // 不同形状在地图上对应不同的颜色
       let colorMap = new Map([
         ["carpets", createjs.Graphics.getRGB(176, 219, 67, 1)],
         ["decelerations", createjs.Graphics.getRGB(18, 234, 234, 1)],
@@ -106,7 +117,7 @@
       let bitmapW;
       let bitmapH;
 
-      // 创建 polygon，用于显示标记点和将标记点连接——即线段
+      // 创建 容器，用于显示标记点和将标记点连接——即线段
       let polygon = createPolygon();
       // 等待地图图像的加载，避免由于加载速度问题导致显示异常
       bitmap.image.onload = function () {
@@ -141,48 +152,58 @@
         // Event listeners for mouse interaction with the stage
         stage.mouseMoveOutside = false; // doesn't seem to work
 
+        // 加载预置障碍物
         loadMapObj();
       }
 
       // 选择标记点的类型，只有在选择后才能进行点的标记
+      // 障碍物类型 radio buttons
       let radios = document.querySelectorAll('input[name="objType"]');
+      // 障碍物形状 radio buttons
       let shapeRadios = document.querySelectorAll('input[name="shapeType"]');
       let key;
       for (const radio of radios) {
         radio.addEventListener("change", function () {
+          // 根据障碍物类型设置 容器 的颜色
           let color = colorMap.get(radio.value);
           polygon.pointColor = color;
           polygon.lineColor = color;
           polygon.fillColor = color;
 
+          // 清除 stage event listener 避免添加重复 listener
           stage.removeAllEventListeners();
           for (let shapeRadio of shapeRadios){
+            // 选择障碍物类型后重置形状 radio buttons 的状态
             shapeRadio.checked = false;
             shapeRadio.disabled = false;
+
             shapeRadio.addEventListener("change", function () {
               key = shapeRadio.value;
+              // 若更改状态时有仍未保存的已标记障碍物先进行保存
               archiveExistedPoly();
               preType = radio.value;
 
               stage.removeAllEventListeners();
               registerMouseHandlers();
-
               addNewPolygon();
 
+              // 无关按钮需要隐藏
               buttonDrawNew.disabled = true;
               buttonDrawNew.hidden = true;
               buttonFinishCurrent.disabled = true;
               buttonFinishCurrent.hidden = true;
 
+              // 形状选择 折线 需要形状将内部填充颜色设置为透明
               if (shapeRadio.value === "polylines")
                 polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
               preShape = shapeRadio.value;
-
             })
           }
         })
       }
 
+      // 将尚未保存的已标记 多边形 或 折线 加入列表
+      // 若 preType 和 preShape 值存在则使用相应值
       function archiveExistedPoly() {
         if (polyPos.length !== 0){
           addToObjList({
@@ -251,6 +272,12 @@
 
                 switch (key){
                   case "circles":
+                    // 添加 circles：
+                    // 首先记录点击位置，并显示半径的输入框和确认按钮
+                    // 记录首次点击位置后则屏蔽所有点击 stage 的动作
+                    //    通过 isRadiusUnsetClicked 实现，即「是否已在未设置半径下进行了点击」
+                    //        true：已经记录过坐标，屏蔽点击 false：尚未点击，记录坐标
+                    // 输入坐标后点击「确定」按钮则添加圆
                     let radiusBox = document.getElementById("radiusBox");
                     let buttonSave = document.getElementById("saveRadius");
                     radiusBox.addEventListener('input', updatePoint);
@@ -303,6 +330,9 @@
 
                     break;
                   case "lines":
+                    // 添加 lines：
+                    // 每有两个点（即一条线）则添加到障碍物列表（objList）一次
+                    // 已经添加过两个点再点击则添加新的容器
                     if (polygon.pointContainer.getNumChildren() !== 2){
                       linesPos.push(pos);
                       polygon.addPoint(pos);
@@ -322,6 +352,7 @@
                     }
                     break;
                   case "polygons":
+                    // 点击则添加点，通过 buttonDrawNew/buttonFinishCurrent 结束
                     buttonDrawNew.hidden = false;
                     buttonFinishCurrent.hidden = false;
                     polygon.addPoint(pos);
@@ -332,6 +363,7 @@
                     buttonFinishCurrent.addEventListener('click', finishObj)
                     break;
                   case "polylines":
+                    // 为了实现折线效果，每次添加点都需要删除之前的点重新进行绘制并移除最后一个点和起始点之间的连线
                     buttonDrawNew.hidden = false;
                     buttonFinishCurrent.hidden = false;
 
@@ -355,6 +387,7 @@
                     }
                     break;
                   case "rectangles":
+                    // 每添加两个点则构成一个方形并添加到障碍物列表，然后添加新的容器
                     let x1, x2, y1, y2;
 
                     if (polygon.pointContainer.getNumChildren() === 0){
@@ -403,6 +436,7 @@
           y : Math.round(this.pos.y+bitmapH-originY)};
       }
 
+      // 根据 json 中符合地图坐标系的坐标转换为可以在 stage 上添加的坐标
       function getOnStageCoord(obj){
         return {
           x: obj.x + originX,
@@ -428,6 +462,7 @@
                   "slopesWorld": {"circles": [], "lines": [], "polygons": [], "polylines": [], "rectangles": []}
                 };
 
+        // 障碍物列表空，则返回空结果
         if (objList.length === 0){
           console.log(JSON.stringify(result));
           return JSON.stringify(result);
@@ -437,6 +472,7 @@
           result[obj.type] = addToResult(result[obj.type], obj);
         }
 
+        // 根据 类型/形状 将对象添加到对应列表中
         function addToResult(type ,obj) {
           for (let i = 0; i < obj.points.length; i++){
             obj.points[i] = getDisplayCoord(obj.points[i]);
@@ -485,7 +521,7 @@
         return JSON.stringify(result);
       }
 
-      // 点击提交按钮像服务器提交已标记点/线段/路径/路径组信息
+      // 点击提交按钮向服务器提交信息
       (function() {
         let httpRequest;
         buttonSubmit.addEventListener('click', makeRequest);
@@ -519,6 +555,7 @@
 
       })();
 
+      // 创建容器
       function createPolygon(color){
         return new ROS2D.PolygonMarker({
           pointColor: color,
@@ -552,7 +589,6 @@
         switch (objShape.toString()) {
           case "circles":
             for (let i = 0; i < obj.length; i++){
-              // 使用 polygon 方法能够更容易将来实现拖动等操作
               let polygon = createPolygon(colorMap.get(type));
               polygon.pointSize = obj[i].r;
               let convertedPoint = getOnStageCoord(obj[i]);
@@ -670,11 +706,11 @@
             break;
           default:
             break;
-
         }
         stage.update();
       }
 
+      // 创建新的容器并添加到 stage
       function addNewPolygon() {
         polygon = createPolygon(
                 colorMap.get(document.querySelector('input[name="objType"]:checked').value)
@@ -682,10 +718,10 @@
         stage.addChild(polygon);
 
         stage.update();
-        // points = [];
         polyPos = [];
       }
 
+      // buttonNewObj 功能
       function updateObj() {
         archiveExistedPoly();
         addNewPolygon();
@@ -694,6 +730,7 @@
         buttonDrawNew.removeEventListener("click", updateObj);
       }
 
+      // buttonFinishObj 功能
       function finishObj(){
         archiveExistedPoly();
         polyPos = [];
@@ -705,6 +742,7 @@
         buttonFinishCurrent.hidden = true;
         buttonDrawNew.hidden = true;
 
+        // 重置两排 radio button 状态
         for (let radio of radios){
           radio.checked = false;
           radio.disabled = false;
@@ -752,6 +790,7 @@
           radius: this.radius,
         });
 
+        // 根据 pos 坐标（x, y, z） 得到 x, y 坐标
         function getXY(points, radius) {
           let pointString = "";
           for (let point of points){
@@ -768,8 +807,9 @@
         function deleteRow() {
           clearStage();
 
+          // 在删除表中对应行的同时删除 stage 中对应容器
           let index = button.parentNode.parentNode.rowIndex -1;
-          stage.removeChildAt(index + 1);
+          stage.removeChildAt(index + 1); // 其中 stage 的第一个子对象是 bitmap 即地图
           table.deleteRow(index + 1);
           objList.splice(index, 1);
           if (objList.length === 0){
@@ -793,6 +833,7 @@
         }
       }
 
+      // 移除 stage 中空容器
       function clearStage() {
         for(let i = 1; i < stage.getNumChildren(); i++){
           if (stage.getChildAt(i).pointContainer.getNumChildren() === 0){
