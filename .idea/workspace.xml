@@ -12,6 +12,7 @@
     <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="实现障碍物的添加/删除，仍有潜在 bug 以及部分控件逻辑需要调整">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/mapObj.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapObj.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/maplist.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/maplist.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -217,6 +218,7 @@
       <workItem from="1657503236512" duration="16951000" />
       <workItem from="1657585715402" duration="17789000" />
       <workItem from="1657671693839" duration="22174000" />
+      <workItem from="1657760079191" duration="5876000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>

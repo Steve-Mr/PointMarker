@@ -301,7 +301,6 @@
         // stage 添加地图对象，先添加的位于底部
         stage.addChild(bitmap);
         polygonIndex ++;
-        console.log("polygon index 1");
 
         // stage 自动刷新
         createjs.Ticker.framerate = 30;
@@ -319,7 +318,6 @@
           // Add the polygon to the viewer
           stage.addChild(polygon);
           polygonIndex ++;
-          console.log("polygon index 2");
 
           stage.update();
         }
@@ -346,7 +344,6 @@
             shapeRadio.addEventListener("change", function () {
               archiveExistedPoly();
               preType = radio.value;
-              console.log("pretype  ", preType.toString());
 
               stage.removeAllEventListeners();
               registerMouseHandlers();
@@ -512,7 +509,6 @@
                   case "lines":
                     if (polygon.pointContainer.getNumChildren() !== 2){
                       linesPos.push(pos);
-                      console.log("linepos pushed" + pos.x);
                       polygon.addPoint(pos);
 
                       if (polygon.pointContainer.getNumChildren() === 2){
@@ -526,7 +522,6 @@
                     } else {
                       addNewPolygon();
                       linesPos.push(pos);
-                      console.log("linepos pushed" + pos.x);
                       polygon.addPoint(pos);
 
                     }
@@ -534,7 +529,6 @@
                   case "polygons":
                     document.getElementById("newObj").hidden = false;
                     document.getElementById("finishObj").hidden = false;
-                    // console.log("polygon points " + polygon.pointContainer.getNumChildren());
                     polygon.addPoint(pos);
                     polyPos.push(pos);
                     document.getElementById("newObj").disabled = false;
@@ -599,8 +593,7 @@
 
                 }
 
-                // console.log(pos)
-                let coord = geDisplayCoord(pos);
+                let coord = getDisplayCoord(pos);
                 coords.push(coord);
 
                 printCoords(coords, coords.length-1);
@@ -615,12 +608,11 @@
       // 由于坐标系位置不一致需要对点坐标进行换算
       // x：只需要计算 originX 并四舍五入
       // y：pos 坐标系原点为左上角，需要的坐标系原点为左下角，需要将 pos.y 值和 bitmapH 相加
-      function geDisplayCoord(pos){
+      function getDisplayCoord(pos){
         this.pos = pos;
-        return new coord({
-          type: document.querySelector('input[name="objType"]:checked').value,
+        return {
           x : Math.round(this.pos.x - originX),
-          y : Math.round(this.pos.y+bitmapH-originY)});
+          y : Math.round(this.pos.y+bitmapH-originY)};
       }
 
       function getOnStageCoord(obj){
@@ -659,29 +651,180 @@
 
         let result =
                 {
-                  points: [],
-                  lines: [],
-                  mapName: "${requestScope.name}",
-                  name: new Date().getMilliseconds().toString() + (Math.random()).toString().slice(2, 7),
-                  pathGroups: [],
-                  paths: []
+                  "carpets": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "carpetsWorld": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "decelerations": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "decelerationsWorld": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "displays": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "displaysWorld": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "highlight": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "highlightWorld": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "obstacles": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "obstaclesWorld": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "slopes": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  },
+                  "slopesWorld": {
+                    "circles": [],
+                    "lines": [],
+                    "polygons": [],
+                    "polylines": [],
+                    "rectangles": []
+                  }
                 };
-
-        for (let i = 0; i < coords.length; i++){
-          result.points.push(coords[i].toJSON());
+        
+        for (let obj of objList){
+          switch (obj.type) {
+            case "carpets":
+              result.carpets = addToResult(result.carpets, obj);
+              break;
+            case "decelerations":
+              result.decelerations = addToResult(result.decelerations, obj);
+              break;
+            case "displays":
+              result.displays = addToResult(result.displays, obj);
+              break;
+            case "highlight":
+              result.highlight = addToResult(result.highlight, obj);
+              break;
+            case "obstacles":
+              result.obstacles = addToResult(result.obstacles, obj);
+              break;
+            case "slopes":
+              result.slopes = addToResult(result.slopes, obj);
+              break;
+          }
         }
+        
+        function addToResult(type ,obj) {
+          for (let i = 0; i < obj.points.length; i++){
+            obj.points[i] = getDisplayCoord(obj.points[i]);
+          }
+          let points = [];
+          switch (obj.shape) {
+            case "circles":
+              type.circles.push({
+                x: obj.points[0].x,
+                y: obj.points[0].y,
+                r: obj.radius
+              });
+              break;
+            case "lines":
+              type.lines.push(
+                [
+                  {
+                    x: obj.points[0].x,
+                    y: obj.points[0].y
+                  },
+                  {
+                    x: obj.points[1].x,
+                    y: obj.points[1].y
+                  }]
+              )
+              break;
+            case "polygons":
 
-        retrieveLines();
-
-        for (let i = 0; i < lines.length; i++){
-          result.lines.push(lines[i].toJSON());
+              for(let point of obj.points){
+                points.push({
+                  x: point.x,
+                  y: point.y
+                })
+              }
+              type.polygons.push(points);
+              points = [];
+              break;
+            case "polylines":
+              for(let point of obj.points){
+                points.push({
+                  x: point.x,
+                  y: point.y
+                })
+              }
+              type.polylines.push(points);
+              points = [];
+              break;
+            case "rectangles":
+              type.rectangles.push(
+                      [
+                        {
+                          x: obj.points[0].x,
+                          y: obj.points[0].y
+                        },
+                        {
+                          x: obj.points[1].x,
+                          y: obj.points[1].y
+                        }]
+              )
+              break;
+            default:
+              break;
+          }
+          return type;
         }
-
-        let path1 = new path({allPoints: coords, allLines: lines});
-        result.paths.push(path1.toJSON());
-
-        result.pathGroups.push(new pathGroup({paths: [path1]}).toJSON());
-
         console.log(JSON.stringify(result));
 
         return JSON.stringify(result);
@@ -838,88 +981,82 @@
 
       // 点击提交按钮像服务器提交已标记点/线段/路径/路径组信息
       (function() {
-        document.getElementById("submitPoints").addEventListener('click', printObjInfo);
-        function printObjInfo() {
-          archiveExistedPoly();
+        archiveExistedPoly();
+        let httpRequest;
+        document.getElementById("submitPoints").addEventListener('click', makeRequest);
 
-          console.log("stage children num " + stage.getNumChildren().toString());
+        function makeRequest() {
 
+          httpRequest = new XMLHttpRequest();
+
+          if (!httpRequest) {
+            alert('Giving up :( Cannot create an XML HTTP instance');
+            return false;
+          }
+          httpRequest.onreadystatechange = alertContents;
+          httpRequest.open('POST', 'https://0.0.0.0/VirtualObstacle/gs-robot/cmd/update_virtual_obstacles?');
+          httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+          httpRequest.send(generateResultJSON());
+
+          console.log(httpRequest);
         }
-        <%--let httpRequest;--%>
-        <%--document.getElementById("submitPoints").addEventListener('click', makeRequestAlt);--%>
 
-        <%--function makeRequest() {--%>
+        function makeRequestAlt() {
+          // 在服务器上线后需要大量修改
 
-        <%--  httpRequest = new XMLHttpRequest();--%>
+          httpRequest = new XMLHttpRequest();
+          if (!httpRequest) {
+            alert('Giving up :( Cannot create an XML HTTP instance');
+            return false;
+          }
+          httpRequest.open('POST', 'https://127.0.0.1/test.html/gs-robot/cmd/generate_graph_path');
+          httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+          for (let i = 0; i < coords.length; i++){
 
-        <%--  if (!httpRequest) {--%>
-        <%--    alert('Giving up :( Cannot create an XML HTTP instance');--%>
-        <%--    return false;--%>
-        <%--  }--%>
-        <%--  httpRequest.onreadystatechange = alertContents;--%>
-        <%--  httpRequest.open('POST', 'https://0.0.0.0/test.html/gs-robot/cmd/generate_graph_path');--%>
-        <%--  httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')--%>
-        <%--  httpRequest.send(generateResultJSON());--%>
+            coords[i].mapName = "${requestScope.name}";
+            // httpRequest.send(coords[i].toJSONAlt());
+            if (i === coords.length - 1){
+              httpRequest.onreadystatechange = alertContents;
+              httpRequest.send(coords[i].toJSONAlt());
+            }else{
+              // httpRequest.onreadystatechange = alertContentsAlt;
 
-        <%--  console.log(httpRequest);--%>
-        <%--}--%>
+            }
 
-        <%--function makeRequestAlt() {--%>
-        <%--  // 在服务器上线后需要大量修改--%>
+            // console.log(coords[i].toJSONAlt());
+            console.log(httpRequest);
+          }
 
-        <%--  httpRequest = new XMLHttpRequest();--%>
-        <%--  if (!httpRequest) {--%>
-        <%--    alert('Giving up :( Cannot create an XML HTTP instance');--%>
-        <%--    return false;--%>
-        <%--  }--%>
-        <%--  httpRequest.open('POST', 'https://127.0.0.1/test.html/gs-robot/cmd/generate_graph_path');--%>
-        <%--  httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')--%>
-        <%--  for (let i = 0; i < coords.length; i++){--%>
+          <%--for (let i = 0; i < coords.length; i++){--%>
+          <%--    if (i === coords.length - 1){--%>
+          <%--        httpRequest.onreadystatechange = alertContents;--%>
+          <%--    }else{--%>
+          <%--        httpRequest.onreadystatechange = alertContentsAlt;--%>
+          <%--    }--%>
+          <%--    coords[i].mapName = "${requestScope.name}";--%>
+          <%--    httpRequest.send(coords[i].toJSONAlt());--%>
+          <%--}--%>
+        }
 
-        <%--    coords[i].mapName = "${requestScope.name}";--%>
-        <%--    // httpRequest.send(coords[i].toJSONAlt());--%>
-        <%--    if (i === coords.length - 1){--%>
-        <%--      httpRequest.onreadystatechange = alertContents;--%>
-        <%--      httpRequest.send(coords[i].toJSONAlt());--%>
-        <%--    }else{--%>
-        <%--      // httpRequest.onreadystatechange = alertContentsAlt;--%>
+        function alertContents() {
+          if (httpRequest.readyState === XMLHttpRequest.DONE) {
+            if (httpRequest.status === 200) {
+              alert(httpRequest.responseText);
+            } else {
+              alert('sent');
+            }
+          }
+        }
 
-        <%--    }--%>
-
-        <%--    // console.log(coords[i].toJSONAlt());--%>
-        <%--    console.log(httpRequest);--%>
-        <%--  }--%>
-
-        <%--  &lt;%&ndash;for (let i = 0; i < coords.length; i++){&ndash;%&gt;--%>
-        <%--  &lt;%&ndash;    if (i === coords.length - 1){&ndash;%&gt;--%>
-        <%--  &lt;%&ndash;        httpRequest.onreadystatechange = alertContents;&ndash;%&gt;--%>
-        <%--  &lt;%&ndash;    }else{&ndash;%&gt;--%>
-        <%--  &lt;%&ndash;        httpRequest.onreadystatechange = alertContentsAlt;&ndash;%&gt;--%>
-        <%--  &lt;%&ndash;    }&ndash;%&gt;--%>
-        <%--  &lt;%&ndash;    coords[i].mapName = "${requestScope.name}";&ndash;%&gt;--%>
-        <%--  &lt;%&ndash;    httpRequest.send(coords[i].toJSONAlt());&ndash;%&gt;--%>
-        <%--  &lt;%&ndash;}&ndash;%&gt;--%>
-        <%--}--%>
-
-        <%--function alertContents() {--%>
-        <%--  if (httpRequest.readyState === XMLHttpRequest.DONE) {--%>
-        <%--    if (httpRequest.status === 200) {--%>
-        <%--      alert(httpRequest.responseText);--%>
-        <%--    } else {--%>
-        <%--      alert('sent');--%>
-        <%--    }--%>
-        <%--  }--%>
-        <%--}--%>
-
-        <%--function alertContentsAlt() {--%>
-        <%--  if (httpRequest.readyState === XMLHttpRequest.DONE) {--%>
-        <%--    if (httpRequest.status === 200) {--%>
-        <%--      alert("error occurred");--%>
-        <%--      // 这里应该放到 else 框体中，为测试用进行对调--%>
-        <%--    } else {--%>
-        <%--    }--%>
-        <%--  }--%>
-        <%--}--%>
+        function alertContentsAlt() {
+          if (httpRequest.readyState === XMLHttpRequest.DONE) {
+            if (httpRequest.status === 200) {
+              alert("error occurred");
+              // 这里应该放到 else 框体中，为测试用进行对调
+            } else {
+            }
+          }
+        }
       })();
 
       function createPolygon(color){
@@ -937,7 +1074,7 @@
       // 加载各种地图上的特殊对象
       function loadMapObj() {
         let mapObjs = ${requestScope.json};
-        console.log(JSON.stringify(mapObjs));
+        // console.log(JSON.stringify(mapObjs));
 
         let obj;
         let color;
@@ -969,8 +1106,6 @@
               polygon.lineContainer.removeAllChildren();
               stage.addChild(polygon);
               polygonIndex ++;
-              console.log("polygon index 3");
-
 
               addToObjList({
                 type: type,
@@ -995,7 +1130,6 @@
               }
               stage.addChild(polygon);
               polygonIndex ++;
-              console.log("polygon index 4");
 
               addToObjList({
                 type: type,
@@ -1019,8 +1153,6 @@
               }
               stage.addChild(polygon);
               polygonIndex ++;
-              console.log("polygon index 5");
-
 
               addToObjList({
                 type: type,
@@ -1054,11 +1186,9 @@
                 shape: objShape,
                 points: points
               })
-              console.log("pre draw " + type);
 
               stage.addChild(polygon);
               polygonIndex ++;
-              console.log("polygon index 6");
 
             }
             break;
@@ -1082,7 +1212,6 @@
               })
               stage.addChild(polygon);
               polygonIndex ++;
-              console.log("polygon index 7");
 
             }
             break;
@@ -1119,7 +1248,6 @@
                 ));
         stage.addChild(polygon);
         polygonIndex ++;
-        console.log("polygon index 8");
 
         stage.update();
         points = [];
@@ -1213,6 +1341,9 @@
 
             stage.removeAllEventListeners();
 
+            document.getElementById("ptable").hidden = true;
+            document.getElementById("submitPoints").hidden = true;
+
           }
         }
 
@@ -1237,10 +1368,12 @@
           let pointString = "";
           if (radius === 0){
             for (let point of points){
+              point = getDisplayCoord(point);
               pointString += " {x: "+ point.x + ", y: " + point.y + "}";
             }
           }else{
             for (let point of points){
+              point = getDisplayCoord(point);
               pointString += " {x: "+ point.x + ", y: " + point.y + ", r: " + radius +"}";
             }
           }
@@ -1335,8 +1468,8 @@
     </button>
   </div>
 </form>
+<div>
 <canvas id="map" width="800" height="800" style="border:1px solid #f11010;"></canvas>
-<p id="points"></p>
 <table id="ptable" hidden>
   <thead>
   <tr>
@@ -1351,6 +1484,7 @@
 <button id="submitPoints" type="button">
   提交
 </button>
+</div>
 
 </body>
 </html>

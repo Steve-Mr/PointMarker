@@ -30,7 +30,9 @@
     <c:forEach var="map" items="${requestScope.maps}" varStatus="loop">
         <tr>
             <td>${map.id}</td>
-            <td> <a href="ServletLoadMap?index=${loop.index}">${map.name}</a></td>
+            <td>${map.name}</td>
+            <td> <a href="ServletLoadMap?index=${loop.index}">标点</a></td>
+            <td> <a href="ServletLoadMap?index=${loop.index}">标记障碍物</a></td>
         </tr>
     </c:forEach>
 </table>
