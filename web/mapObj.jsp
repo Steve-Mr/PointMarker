@@ -116,7 +116,6 @@
       // 地图代表物理区域大小，单位为米，即地图图片大小 * 比例
       let bitmapW;
       let bitmapH;
-
       // 创建 容器，用于显示标记点和将标记点连接——即线段
       let polygon = createPolygon();
       // 等待地图图像的加载，避免由于加载速度问题导致显示异常
@@ -211,6 +210,8 @@
             shape: preShape? preShape : document.querySelector('input[name="shapeType"]:checked').value,
             points: polyPos
           });
+
+          createNo(objList);
           polyPos = [];
         }
       }
@@ -322,6 +323,9 @@
                       points: [pos],
                       radius: radiusBox.value
                     })
+
+                    createNo(objList);
+
                     isRadiusUnsetClicked = false;
 
                     buttonSave.removeEventListener("click",createCircle);
@@ -343,6 +347,9 @@
                           shape: document.querySelector('input[name="shapeType"]:checked').value,
                           points: linesPos,
                         })
+
+                        createNo(objList);
+
                         linesPos = [];
                       }
                     } else {
@@ -409,6 +416,8 @@
                         shape: document.querySelector('input[name="shapeType"]:checked').value,
                         points: rectPos
                       });
+
+                      createNo(objList);
 
                       rectPos = [];
 
@@ -606,6 +615,8 @@
                 points: [pos],
                 radius: obj[i].r
               })
+
+              createNo(objList);
             }
             break;
           case "lines":
@@ -629,6 +640,8 @@
                 points: points
               })
 
+              createNo(objList);
+
             }
             break;
           case "polygons":
@@ -650,6 +663,8 @@
                 shape: objShape,
                 points: points
               })
+
+              createNo(objList);
             }
             break;
           case "polylines":
@@ -680,6 +695,8 @@
 
               stage.addChild(polygon);
 
+              createNo(objList);
+
             }
             break;
           case "rectangles":
@@ -698,9 +715,11 @@
               addToObjList({
                 type: type,
                 shape: objShape,
-                points: [obj[i][0], obj[i][1]]
+                points: [{x:x1, y:y1, z:0}, {x:x2, y:y2, z:0}]
               })
               stage.addChild(polygon);
+
+              createNo(objList);
 
             }
             break;
@@ -765,10 +784,14 @@
         // 在屏幕上输出信息
         table.hidden = false;
         let tr = table.insertRow(table.rows.length);
-        let cell0 = tr.insertCell(0);
-        let cell1 = tr.insertCell(1);
-        let cell2 = tr.insertCell(2);
-        let cell3 = tr.insertCell(3);
+        let cell4 = tr.insertCell(0);
+        let cell0 = tr.insertCell(1);
+        let cell1 = tr.insertCell(2);
+        let cell2 = tr.insertCell(3);
+        let cell3 = tr.insertCell(4);
+
+        // 在表格中显示序号
+        cell4.innerText = cell4.parentNode.rowIndex - 1;
 
         cell0.innerText = this.type;
         cell1.innerText = this.shape;
@@ -809,7 +832,11 @@
 
           // 在删除表中对应行的同时删除 stage 中对应容器
           let index = button.parentNode.parentNode.rowIndex -1;
-          stage.removeChildAt(index + 1); // 其中 stage 的第一个子对象是 bitmap 即地图
+          stage.removeChildAt(index * 2 + 1, index * 2 + 2); // 其中 stage 的第一个子对象是 bitmap 即地图
+          // 添加了序号后，障碍物和对应序号对象为一组，每次删除时直接删除一组。
+          // 由于删除时没有没有更新表格和 stage 中序号内容，因此尽管某些情况下展示的序号和实际顺序并不对应
+          // 但是表格中行和 stage 中图形对应关系不变，删除的动作也不会受到影响
+
           table.deleteRow(index + 1);
           objList.splice(index, 1);
           if (objList.length === 0){
@@ -836,11 +863,58 @@
       // 移除 stage 中空容器
       function clearStage() {
         for(let i = 1; i < stage.getNumChildren(); i++){
-          if (stage.getChildAt(i).pointContainer.getNumChildren() === 0){
-            stage.removeChildAt(i);
-            i--;
+          if (stage.getChildAt(i).pointContainer){
+            if (stage.getChildAt(i).pointContainer.getNumChildren() === 0){
+              stage.removeChildAt(i);
+              i--;
+            }
           }
         }
+      }
+
+      // 根据障碍物在障碍物列表中的顺序添加序号
+      function createNo(objList) {
+        let index = objList.length - 1;
+        let obj = objList[index];
+        let x, y;
+        // 障碍物为圆形
+        // 圆形直径 > 3 则在圆心添加序号
+        if (obj.points[0].r){
+          if (obj.points[0].r > 1.5){
+            x = obj.points[0].x;
+            y = obj.points[0].y;
+          }else {
+            // 圆形直径 < 3 在圆形边缘添加序号
+            // 默认边缘右侧，如果边缘右侧超出 stage 范围则添加到左侧
+            x = obj.points[0].x + obj.points[0].r + 4 > bitmapW ? obj.points[0].x - obj.points[0].r -2 : obj.points[0].x + obj.points[0].r;
+            y = obj.points[0].y;
+          }
+        }else{
+          // 其他形状，分别找出所有点中 x 轴方向和 y 轴方向最远的点之间对应 x/y 坐标值
+          // 形状足够大，则序号添加到中心，否则添加到边缘右侧，若边缘右侧空间不够则添加到左侧
+          let arrayX = [], arrayY = [];
+          for (let point of obj.points){
+            arrayX.push(point.x);
+            arrayY.push(point.y);
+          }
+          let x1 = Math.max(...arrayX), x2 = Math.min(...arrayX);
+          let y1 = Math.max(...arrayY), y2 = Math.min(...arrayY);
+          y = (y1 + y2)/2;
+          if (x1 - x2 > 2 && y1 - y2 > 2){
+            x = (x1 + x2)/2;
+          }else{
+            x = x1 + 2 > bitmapW ? x2 - 2 : x1
+          }
+        }
+        let textBlock = new createjs.Text(index, "2px Arial");
+        // 2px 大小 arial 字体
+        textBlock.x = x;
+        textBlock.y = -y;
+        // obj.points 中坐标使用的坐标系中 y 轴正向朝上，stage 中坐标系 y 轴正向朝下
+        textBlock.shadow = new createjs.Shadow("#000000", 3, 3, 3);
+        // 添加阴影，有助于辨认
+        console.log("text x y " + x + " , " + textBlock.y )
+        stage.addChild(textBlock);
       }
     }
 
@@ -925,6 +999,7 @@
 <table id="ptable" hidden>
   <thead>
   <tr>
+    <th>序号</th>
     <th>类型</th>
     <th>形状</th>
     <th>坐标</th>

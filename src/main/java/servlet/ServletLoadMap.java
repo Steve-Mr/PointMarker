@@ -7,6 +7,7 @@ import javax.servlet.http.*;
 import javax.servlet.annotation.*;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 @WebServlet(name = "ServletLoadMap", value = "/ServletLoadMap")
 public class ServletLoadMap extends HttpServlet {
@@ -323,7 +324,13 @@ public class ServletLoadMap extends HttpServlet {
             request.setAttribute("json", jsonString);
         }
 
-        RequestDispatcher dispatcher = request.getRequestDispatcher("mapObj.jsp");
+        RequestDispatcher dispatcher = null;
+        if(Objects.equals(request.getParameter("action"), "point")){
+            dispatcher = request.getRequestDispatcher("mapPoint.jsp");
+        }else if (Objects.equals(request.getParameter("action"), "obstacles")){
+            dispatcher = request.getRequestDispatcher("mapObj.jsp");
+        }
+        
         dispatcher.forward(request, response);
 
     }

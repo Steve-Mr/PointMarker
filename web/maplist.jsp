@@ -31,8 +31,8 @@
         <tr>
             <td>${map.id}</td>
             <td>${map.name}</td>
-            <td> <a href="ServletLoadMap?index=${loop.index}">标点</a></td>
-            <td> <a href="ServletLoadMap?index=${loop.index}">标记障碍物</a></td>
+            <td> <a href="ServletLoadMap?index=${loop.index}&action=point">标点</a></td>
+            <td> <a href="ServletLoadMap?index=${loop.index}&action=obstacles">标记障碍物</a></td>
         </tr>
     </c:forEach>
 </table>
