@@ -21,170 +21,6 @@
     <script type="text/javascript" src="https://static.robotwebtools.org/ros2djs/current/ros2d.min.js"></script>
 
     <script type="text/javascript">
-        // comment
-
-        /**
-         * 坐标类
-         * @param:type
-                * 0 - 初始点
-                * 1 - 充电点
-                * 2 - 导航点
-                * 3 - RFID 点
-                * 4 - 注水点
-                * 5 - 排水点
-         * @param: x, y, yaw : 点的 x,y 坐标和偏向角
-         * @param:name 点的名字默认为 Point_ + 年月（0-11）日(1-31) + 毫秒 + 五位随机数 格式
-         *
-         * @function:toString 输出字符串格式
-         * @function:toJSON 输出 JSON 对象
-         * */
-        class coord {
-            constructor(options) {
-                options = options || {}
-
-                let date = new Date();
-
-                this.type = options.type || 6;
-                this.x = options.x;
-                this.y = options.y;
-                this.yaw = options.yaw || 0.0;
-                this.name = options.name ||
-                    "Point_"+date.getFullYear().toString()
-                    +date.getMonth().toString() +date.getDate().toString()
-                    +date.getMilliseconds().toString()+ "_"
-                    + (Math.random()).toString().slice(2, 7);
-                this.mapName = options.mapName || "unset";
-            }
-
-            toString(){
-                return this.type.toString() + " | "
-                    + this.x.toString() + ", "
-                    + this.y.toString() + ", "
-                    + this.yaw.toString() + ", "
-                    + this.name;
-            }
-
-            toJSON(){
-                return {
-                    actions: [],
-                    gridPosition: {
-                        x: this.x,
-                        y: this.y
-                    },
-                    name: this.name
-                };
-            }
-
-            toJSONAlt(){
-                return {
-                    angle: this.yaw,
-                    gridX: this.x,
-                    gridY: this.y,
-                    mapName: this.mapName,
-                    name: this.name,
-                    type: this.type
-                }
-            }
-        }
-
-        /**
-         * 线段类
-         *
-         * @param:sPoint 起始点
-         * @param:ePoint 终止点
-         * @param:name 线段名，默认使用 起始点名称_终止点名称
-         *
-         * @function:toJSON 输出对应 JSON 对象
-         * */
-        class line{
-            constructor(options) {
-                this.sPoint = options.sPoint;
-                this.ePoint = options.ePoint;
-                this.name = options.name || this.sPoint.name + "_" + this.ePoint.name;
-            }
-
-            toJSON(){
-                return {
-                    begin: this.sPoint.name,
-                    end: this.ePoint.name,
-                    name: this.name,
-                    radius: 0
-                };
-            }
-        }
-
-        /**
-         * 路径类
-         *
-         * @Param:allPoints 所有已标记点，即使路径可能不经过该点
-         * @Param:allLines 路径包含所有线段的名字集合
-         * @Param:name 路径名，Path_ + 毫秒 + 五位随机数
-         *
-         * @function:toJSON 输出对应 JSON 对象
-         * */
-        class path{
-            constructor(options) {
-                this.allPoints = options.allPoints;
-                this.allLines  = options.allLines;
-                this.name = options.name || 'Path_' + new Date().getMilliseconds().toString()+ "_"
-                    + (Math.random()).toString().slice(2, 7);
-            }
-
-            toJSON(){
-                let result = {
-                    lines:[],
-                    name: this.name,
-                    points:[]
-                }
-
-                for (let i = 0; i < this.allPoints.length; i++){
-                    result.points.push(this.allPoints[i].toJSON());
-                }
-
-                for (let i = 0; i < this.allLines.length; i++){
-                    result.lines.push(
-                        {
-                            name: this.allLines[i].name
-                        }
-                    )
-                }
-
-                return result;
-            }
-        }
-
-        /**
-         * 路径组
-         * 包含多条路径
-         *
-         * @param:paths 路径组包含的所有路径集合
-         *
-         * @function:toJSON 输出 JSON 对象
-         * */
-        class pathGroup{
-            constructor(options) {
-                this.paths = options.paths;
-            }
-
-            toJSON(){
-                let result = {
-                    name: 'pathgroup_'+ new Date().getMilliseconds().toString()+ "_"
-                        + (Math.random()).toString().slice(2, 7),
-                    paths: [],
-                    type: "normal"
-                }
-
-                for (let i = 0; i < this.paths.length; i++){
-                    result.paths.push(
-                        {
-                            name: this.paths[i].name
-                        }
-                    );
-                }
-
-                return result;
-            }
-        }
 
         function init() {
             console.log("init...");
@@ -194,6 +30,7 @@
              * status: 数据获取是否成功，失败则返回前一页
              * url: 地图的图片链接
              * resolution, originX, originY: 同地图定义
+             * name: 地图名称
              * */
 
             let originX = 0;
@@ -216,9 +53,7 @@
             bitmap.scaleX = ${requestScope.resolution};
             bitmap.scaleY = ${requestScope.resolution};
 
-            // 标记点和线段数组
-            let coords = [];
-            let lines = [];
+            let pointsList = [];
 
             // 缩放视图
             let zoomView = new ROS2D.ZoomView({
@@ -235,13 +70,7 @@
 
             let pointCallBack = function (type, event, index) {
                 if (type === 'mousedown') {
-                    // 按住 shift 点击点则移除此点，未按住 shift 只选中此点
-                    if (event.nativeEvent.shiftKey === true) {
-                        deleteRowFun(index)
-                    }
-                    else {
-                        selectedPointIndex = index;
-                    }
+                    selectedPointIndex = index;
                 }
                 clickedPolygon = true;
             };
@@ -252,7 +81,7 @@
             // 创建 polygon，用于显示标记点和将标记点连接——即线段
             let polygon = new ROS2D.PolygonMarker({
                 pointColor: createjs.Graphics.getRGB(255, 0, 0, 0.66),
-                lineColor: createjs.Graphics.getRGB(100, 100, 255, 1),
+                lineColor: createjs.Graphics.getRGB(100, 100, 255, 0),
                 pointCallBack: pointCallBack,
                 lineCallBack: lineCallBack,
             });
@@ -355,9 +184,9 @@
                             if (selectedPointIndex !== null) {
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
-                                coords[selectedPointIndex].x = Math.round(pos.x - originX);
-                                coords[selectedPointIndex].y = Math.round(pos.y+bitmapH-originY);
-                                printCoords(coords, selectedPointIndex);
+                                pointsList[selectedPointIndex].gridX = Math.round(pos.x - originX);
+                                pointsList[selectedPointIndex].gridY = Math.round(pos.y+bitmapH-originY);
+                                printCoords(pointsList, selectedPointIndex);
                             }
                         }
                     }
@@ -379,11 +208,14 @@
                             else if (stage.mouseInBounds === true && clickedPolygon === false) {
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.addPoint(pos);
-                                console.log(pos)
-                                let coord = getDisplayCoord(pos);
-                                coords.push(coord);
+                                // let coord = getDisplayCoord(pos);
+                                addToPointsList({
+                                    type: document.querySelector('input[name="ptype"]:checked').value,
+                                    x: pos.x,
+                                    y: pos.y,
+                                });
 
-                                printCoords(coords, coords.length-1);
+                                printCoords(pointsList, pointsList.length-1);
                             }
                             clickedPolygon = false;
                         }
@@ -397,10 +229,10 @@
             // y：pos 坐标系原点为左上角，需要的坐标系原点为左下角，需要将 pos.y 值和 bitmapH 相加
             function getDisplayCoord(pos){
                 this.pos = pos;
-                return new coord({
+                return {
                     type: document.querySelector('input[name="ptype"]:checked').value,
                     x : Math.round(this.pos.x - originX),
-                    y : Math.round(this.pos.y+bitmapH-originY)});
+                    y : Math.round(this.pos.y+bitmapH-originY)};
             }
 
             function getOnStageCoord(obj){
@@ -413,7 +245,7 @@
             // 根据线段方向计算偏向角，使用弧度单位，逆时针方向为正，x 轴正向为 0
             // 只有一个点时偏向角为 0
             function calYaw(coords){
-                for (let index = 0; index <coords.length; index++){
+                for (let index = 0; index < coords.length; index++){
                     let coord1 = coords[index];
                     let coord2;
                     if(index !== coords.length-1){
@@ -421,52 +253,30 @@
                     }else{
                         coord2 = coords[0];
                     }
-                    coords[index].yaw = Math.atan2(coord2.y - coord1.y, coord2.x - coord1.x).toFixed(2);
+                    coords[index].angle = Math.atan2(coord2.gridY - coord1.gridY, coord2.gridX - coord1.gridX).toFixed(2);
                 }
             }
 
-            // 依据已标记点的顺序生成所有线段
-            function retrieveLines() {
-                let i;
-                for (i = 0; i < coords.length-1; i++){
-                    lines.push(new line({sPoint:coords[i], ePoint:coords[i+1]}));
-                }
-                lines.push(new line({sPoint:coords[i], ePoint:coords[0]}));
-            }
+            function addToPointsList(options) {
+                this.type = options.type || 6;
+                this.x = options.x;
+                this.y = options.y;
+                this.yaw = options.yaw || 0.0;
+                this.name = options.name ||
+                    "Point_"+ new Date().getFullYear().toString()
+                    +new Date().getMonth().toString() +new Date().getDate().toString()
+                    +new Date().getMilliseconds().toString()+ "_"
+                    + (Math.random()).toString().slice(2, 7);
+                this.mapName = options.mapName || "${name}";
 
-            // 生成返回服务器的 JSON 字符串，格式参照 1.7.1 生成手画路径部分。
-            function generateResultJSON() {
-
-                let result =
-                    {
-                        points: [],
-                        lines: [],
-                        mapName: "${requestScope.name}",
-                        name: new Date().getMilliseconds().toString() + (Math.random()).toString().slice(2, 7),
-                        pathGroups: [],
-                        paths: []
-                    };
-
-                for (let i = 0; i < coords.length; i++){
-                    result.points.push(coords[i].toJSON());
-                }
-
-                retrieveLines();
-
-                for (let i = 0; i < lines.length; i++){
-                    result.lines.push(lines[i].toJSON());
-                }
-
-                let path1 = new path({allPoints: coords, allLines: lines});
-                result.paths.push(path1.toJSON());
-
-                // let paths = [];
-                // paths.push(path1);
-                result.pathGroups.push(new pathGroup({paths: [path1]}).toJSON());
-
-                console.log(JSON.stringify(result));
-
-                return JSON.stringify(result);
+                pointsList.push({
+                    angle: this.yaw,
+                    gridX: Math.round(this.x - originX),
+                    gridY: Math.round(this.y+bitmapH-originY),
+                    mapName: this.mapName,
+                    name: this.name,
+                    type: this.type
+                })
             }
 
             /**
@@ -496,7 +306,6 @@
                 }
 
                 function updateTable(coords, index) {
-                    console.log("updatetable " + index.toString())
                     calYaw(coords);
                     for (let i = 0; i < coords.length; i++) {
                         console.log(coords[i].toString());
@@ -550,9 +359,9 @@
                             break;
                     }
 
-                    cell1.innerHTML = coords[index].x.toString() + ", " + coords[index].y.toString();
+                    cell1.innerHTML = coords[index].gridX.toString() + ", " + coords[index].gridY.toString();
 
-                    cell2.innerHTML = coords[index].yaw.toString();
+                    cell2.innerHTML = coords[index].angle.toString();
 
                     let element;
                     if (cell3.childNodes.length !== 0) {
@@ -611,7 +420,7 @@
             function deleteRowFun(index){
                 this.index = index;
                 polygon.remPoint(this.index);
-                coords.splice(this.index, 1);
+                pointsList.splice(this.index, 1);
                 pTable.deleteRow(this.index+2);
                 if (pTable.rows.length === 2){
                     document.getElementById("submitPoints").hidden = true;
@@ -635,7 +444,7 @@
                     httpRequest.onreadystatechange = alertContents;
                     httpRequest.open('POST', 'https://0.0.0.0/test.html/gs-robot/cmd/generate_graph_path');
                     httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
-                    httpRequest.send(generateResultJSON());
+                    // httpRequest.send(generateResultJSON());
 
                     console.log(httpRequest);
                 }
@@ -643,28 +452,28 @@
                 function makeRequestAlt() {
                     // 在服务器上线后需要大量修改
 
-                    httpRequest = new XMLHttpRequest();
-                    if (!httpRequest) {
-                        alert('Giving up :( Cannot create an XML HTTP instance');
-                        return false;
-                    }
-                    httpRequest.open('POST', 'https://127.0.0.1/test.html/gs-robot/cmd/generate_graph_path');
-                    httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
-                    for (let i = 0; i < coords.length; i++){
+                    <%--httpRequest = new XMLHttpRequest();--%>
+                    <%--if (!httpRequest) {--%>
+                    <%--    alert('Giving up :( Cannot create an XML HTTP instance');--%>
+                    <%--    return false;--%>
+                    <%--}--%>
+                    <%--httpRequest.open('POST', 'https://127.0.0.1/test.html/gs-robot/cmd/generate_graph_path');--%>
+                    <%--httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')--%>
+                    <%--for (let i = 0; i < coords.length; i++){--%>
 
-                        coords[i].mapName = "${requestScope.name}";
-                        // httpRequest.send(coords[i].toJSONAlt());
-                        if (i === coords.length - 1){
-                            httpRequest.onreadystatechange = alertContents;
-                            httpRequest.send(coords[i].toJSONAlt());
-                        }else{
-                            // httpRequest.onreadystatechange = alertContentsAlt;
+                    <%--    coords[i].mapName = "${requestScope.name}";--%>
+                    <%--    // httpRequest.send(coords[i].toJSONAlt());--%>
+                    <%--    if (i === coords.length - 1){--%>
+                    <%--        httpRequest.onreadystatechange = alertContents;--%>
+                    <%--        httpRequest.send(coords[i].toJSON());--%>
+                    <%--    }else{--%>
+                    <%--        // httpRequest.onreadystatechange = alertContentsAlt;--%>
 
-                        }
+                    <%--    }--%>
 
-                        console.log(coords[i].toJSONAlt());
-                        console.log(httpRequest);
-                    }
+                    <%--    console.log(coords[i].toJSON());--%>
+                    <%--    console.log(httpRequest);--%>
+                    <%--}--%>
 
                     <%--for (let i = 0; i < coords.length; i++){--%>
                     <%--    if (i === coords.length - 1){--%>
@@ -737,7 +546,6 @@
                             color = createjs.Graphics.getRGB(240, 247, 87, 1);
                             break;
                         default :
-                            continue;
                             break;
                     }
                     for (let key in obj){

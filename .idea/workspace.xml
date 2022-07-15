@@ -9,12 +9,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="整理代码">
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="障碍物标记增加序号显示&#10;完善流程">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/map.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapPoint.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/mapObj.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapObj.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/maplist.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/maplist.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/mapPoint.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapPoint.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +28,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="point_with_path" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="HighlightingSettingsPerFile">
@@ -221,7 +223,7 @@
       <workItem from="1657585715402" duration="17789000" />
       <workItem from="1657671693839" duration="22174000" />
       <workItem from="1657760079191" duration="27089000" />
-      <workItem from="1657844372588" duration="16562000" />
+      <workItem from="1657844372588" duration="20407000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
@@ -356,7 +358,14 @@
       <option name="project" value="LOCAL" />
       <updated>1657791805761</updated>
     </task>
-    <option name="localTasksCounter" value="20" />
+    <task id="LOCAL-00020" summary="障碍物标记增加序号显示&#10;完善流程">
+      <created>1657889986516</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1657889986516</updated>
+    </task>
+    <option name="localTasksCounter" value="21" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -400,7 +409,8 @@
     <MESSAGE value="实现障碍物的添加/删除，仍有潜在 bug 以及部分控件逻辑需要调整" />
     <MESSAGE value="生成 json 并发送" />
     <MESSAGE value="整理代码" />
-    <option name="LAST_COMMIT_MESSAGE" value="整理代码" />
+    <MESSAGE value="障碍物标记增加序号显示&#10;完善流程" />
+    <option name="LAST_COMMIT_MESSAGE" value="障碍物标记增加序号显示&#10;完善流程" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
