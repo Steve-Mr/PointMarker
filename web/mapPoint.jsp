@@ -54,6 +54,9 @@
             bitmap.scaleY = ${requestScope.resolution};
 
             let pointsList = [];
+            let addFailList = [];
+            let deleteFailList = [];
+            let buttonEnd = document.getElementById("buttonActionEnd");
 
             // 缩放视图
             let zoomView = new ROS2D.ZoomView({
@@ -81,7 +84,7 @@
             // 创建 polygon，用于显示标记点和将标记点连接——即线段
             let polygon = new ROS2D.PolygonMarker({
                 pointColor: createjs.Graphics.getRGB(255, 0, 0, 0.66),
-                lineColor: createjs.Graphics.getRGB(100, 100, 255, 0),
+                lineColor: createjs.Graphics.getRGB(100, 100, 255, 0.33),
                 pointCallBack: pointCallBack,
                 lineCallBack: lineCallBack,
             });
@@ -89,6 +92,8 @@
             // Hack. 用于避免 polygon 在线段围成区域上添加遮罩——设置该遮罩透明度 100%
             // in source code : this.fillColor = options.pointColor || createjs.Graphics.getRGB(0, 255, 0, 0.33);
             polygon.fillColor = createjs.Graphics.getRGB(100, 100, 255, 0);
+
+            let radios = document.querySelectorAll('input[name="ptype"]');
 
             // 地图代表物理区域大小，单位为米，即地图图片大小 * 比例
             let bitmapW;
@@ -138,7 +143,35 @@
                 }
 
                 loadMapObj();
+                // 选择标记点的类型，只有在选择后才能进行点的标记
+
+                for (const radio of radios) {
+                    radio.addEventListener("change", function () {
+                        stage.removeAllEventListeners();
+                        registerMouseHandlers();
+                    })
+                }
             }
+
+            // 不同形状在地图上对应不同的颜色
+            let colorMap = new Map([
+                ["carpets", createjs.Graphics.getRGB(176, 219, 67, 1)],
+                ["decelerations", createjs.Graphics.getRGB(18, 234, 234, 1)],
+                ["displays", createjs.Graphics.getRGB(188, 231, 253, 1)],
+                ["highlight", createjs.Graphics.getRGB(196, 146, 177, 1)],
+                ["obstacles", createjs.Graphics.getRGB(219, 39, 99, 1)],
+                ["slopes", createjs.Graphics.getRGB(240, 247, 87, 1)]
+            ]);
+
+            let typeMap = new Map([
+                ["0", "初始点"],
+                ["1", "充电点"],
+                ["2", "导航点"],
+                ["3", "RFID 点"],
+                ["4", "注水点"],
+                ["5", "排水点"],
+                ["6", "未注明/错误"],
+            ]);
 
             // Event listeners for mouse interaction with the stage
             stage.mouseMoveOutside = false; // doesn't seem to work
@@ -153,6 +186,7 @@
                 let zoomKey = false;
                 let panKey = false;
                 let startPos = new ROSLIB.Vector3();
+                let movePoint = false;
 
                 stage.addEventListener('stagemousedown', function (event) {
                     if (event.nativeEvent.ctrlKey === true) {
@@ -182,11 +216,16 @@
                         }
                         else {
                             if (selectedPointIndex !== null) {
+                                movePoint = true;
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
                                 pointsList[selectedPointIndex].gridX = Math.round(pos.x - originX);
                                 pointsList[selectedPointIndex].gridY = Math.round(pos.y+bitmapH-originY);
                                 printCoords(pointsList, selectedPointIndex);
+                                let textBlock = stage.getChildByName("textBlock"+selectedPointIndex);
+                                textBlock.x = pos.x;
+                                textBlock.y = -pos.y;
+                                stage.update();
                             }
                         }
                     }
@@ -199,6 +238,10 @@
                         }
                         else if (panKey === true) {
                             panKey = false;
+                        }else if (movePoint === true){
+                            sendDeleteRequest(pointsList[selectedPointIndex]);
+                            sendAddRequest(pointsList[selectedPointIndex]);
+                            movePoint = false;
                         }
                         else {
                             // Add point when not clicked on the polygon
@@ -208,14 +251,16 @@
                             else if (stage.mouseInBounds === true && clickedPolygon === false) {
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.addPoint(pos);
-                                // let coord = getDisplayCoord(pos);
                                 addToPointsList({
                                     type: document.querySelector('input[name="ptype"]:checked').value,
                                     x: pos.x,
                                     y: pos.y,
                                 });
 
+                                createNo(pos, pointsList.length-1);
+
                                 printCoords(pointsList, pointsList.length-1);
+                                sendAddRequest(pointsList[pointsList.length-1])
                             }
                             clickedPolygon = false;
                         }
@@ -230,7 +275,6 @@
             function getDisplayCoord(pos){
                 this.pos = pos;
                 return {
-                    type: document.querySelector('input[name="ptype"]:checked').value,
                     x : Math.round(this.pos.x - originX),
                     y : Math.round(this.pos.y+bitmapH-originY)};
             }
@@ -244,16 +288,16 @@
 
             // 根据线段方向计算偏向角，使用弧度单位，逆时针方向为正，x 轴正向为 0
             // 只有一个点时偏向角为 0
-            function calYaw(coords){
-                for (let index = 0; index < coords.length; index++){
-                    let coord1 = coords[index];
-                    let coord2;
-                    if(index !== coords.length-1){
-                        coord2 = coords[index+1];
+            function calYaw(pointsList){
+                for (let index = 0; index < pointsList.length; index++){
+                    let point1 = pointsList[index];
+                    let point2;
+                    if(index !== pointsList.length-1){
+                        point2 = pointsList[index+1];
                     }else{
-                        coord2 = coords[0];
+                        point2 = pointsList[0];
                     }
-                    coords[index].angle = Math.atan2(coord2.gridY - coord1.gridY, coord2.gridX - coord1.gridX).toFixed(2);
+                    pointsList[index].angle = Math.atan2(point2.gridY - point1.gridY, point2.gridX - point1.gridX).toFixed(2);
                 }
             }
 
@@ -285,8 +329,10 @@
              * @param:coords 包含标记点的数组
              * @param:index 标记点在数组中位置
              * */
-            function printCoords(coords, index){
+            function printCoords(pointsList, index){
                 pTable.hidden = false;
+                buttonEnd.hidden = false;
+                buttonEnd.addEventListener("click", finishRemainingPoints);
 
                 // 表格中已经存在两行，所以标记点在表格中的对应位置需要 +2
                 let tableIndex;
@@ -294,21 +340,21 @@
 
                 // 当一个点发生变动时需要更新附近点
                 if (index === 0) {
-                    if (coords.length > 1){
-                        updateTable(coords, index);
-                        updateTable(coords, (coords.length - 1));
+                    if (pointsList.length > 1){
+                        updateTable(pointsList, index);
+                        updateTable(pointsList, (pointsList.length - 1));
                     }else{
-                        updateTable(coords, index);
+                        updateTable(pointsList, index);
                     }
                 } else {
-                    updateTable(coords, index);
-                    updateTable(coords, index - 1);
+                    updateTable(pointsList, index);
+                    updateTable(pointsList, index - 1);
                 }
 
-                function updateTable(coords, index) {
-                    calYaw(coords);
-                    for (let i = 0; i < coords.length; i++) {
-                        console.log(coords[i].toString());
+                function updateTable(pointsList, index) {
+                    calYaw(pointsList);
+                    for (let i = 0; i < pointsList.length; i++) {
+                        console.log(pointsList[i].toString());
                     }
                     tableIndex = index + 2;
 
@@ -320,48 +366,29 @@
                     // cell3: 名字——允许手动编辑
                     if (tableIndex === pTable.rows.length){
                         tr = pTable.insertRow(tableIndex);
-                        cell0 = tr.insertCell(0);
-                        cell1 = tr.insertCell(1);
-                        cell2 = tr.insertCell(2);
-                        cell3 = tr.insertCell(3);
-                        cell4 = tr.insertCell(4);
-                        cell5 = tr.insertCell(5);
+                        cell5 = tr.insertCell(0);
+                        cell0 = tr.insertCell(1);
+                        cell1 = tr.insertCell(2);
+                        cell2 = tr.insertCell(3);
+                        cell3 = tr.insertCell(4);
+                        cell4 = tr.insertCell(5);
                     }else{
                         tr = pTable.rows[tableIndex];
-                        cell0 = tr.cells[0];
-                        cell1 = tr.cells[1];
-                        cell2 = tr.cells[2];
-                        cell3 = tr.cells[3];
-                        cell4 = tr.cells[4];
+                        cell5 = tr.cells[0];
+                        cell0 = tr.cells[1];
+                        cell1 = tr.cells[2];
+                        cell2 = tr.cells[3];
+                        cell3 = tr.cells[4];
+                        cell4 = tr.cells[5];
                     }
 
-                    switch (coords[index].type) {
-                        case "0":
-                            cell0.innerHTML = "初始点";
-                            break;
-                        case "1":
-                            cell0.innerHTML = "充电点";
-                            break;
-                        case "2":
-                            cell0.innerHTML = "导航点";
-                            break;
-                        case "3":
-                            cell0.innerHTML = "RFID点";
-                            break;
-                        case "4":
-                            cell0.innerHTML = "注水点";
-                            break;
-                        case "5":
-                            cell0.innerHTML = "排水点";
-                            break;
-                        default:
-                            cell0.innerHTML = "未知/错误";
-                            break;
-                    }
+                    cell5.innerHTML = cell5.parentNode.rowIndex - 2;
 
-                    cell1.innerHTML = coords[index].gridX.toString() + ", " + coords[index].gridY.toString();
+                    cell0.innerHTML = typeMap.get(pointsList[index].type);
 
-                    cell2.innerHTML = coords[index].angle.toString();
+                    cell1.innerHTML = pointsList[index].gridX.toString() + ", " + pointsList[index].gridY.toString();
+
+                    cell2.innerHTML = pointsList[index].angle.toString();
 
                     let element;
                     if (cell3.childNodes.length !== 0) {
@@ -374,7 +401,7 @@
                     }
 
                     cell3.appendChild(element);
-                    element.value = coords[index].name;
+                    element.value = pointsList[index].name;
                     console.log("===");
 
                     let button;
@@ -401,119 +428,120 @@
                                 alert("please input point name");
                                 return;
                             }
-                            coords[index].name = element.value;
+                            pointsList[index].name = element.value;
+                            sendDeleteRequest(pointsList[index]);
+                            sendAddRequest(pointsList[index]);
                             button.innerText = "delete";
                             button.removeEventListener("click", makeChange);
                             button.addEventListener("click", deleteRow);
+                            if (buttonEnd.hidden === true){
+                                buttonEnd.hidden = false;
+                                buttonEnd.addEventListener("click", finishRemainingPoints);
+                            }
                         }
                     }
 
                     function deleteRow() {
                         let index = button.parentNode.parentNode.rowIndex - 2;
-                        deleteRowFun(index);
+                        let displayIndex = button.parentNode.parentNode.cells[0].innerHTML;
+
+                        sendDeleteRequest(pointsList[index]);
+                        console.log("deleting point " + index + " total " + pointsList.length + " points")
+
+                        polygon.remPoint(index);
+                        pointsList.splice(index, 1);
+                        pTable.deleteRow(index+2);
+                        if (pTable.rows.length === 2){
+                            pTable.hidden = true;
+                        }
+                        console.log("textBlock"+displayIndex);
+
+                        stage.removeChild(stage.getChildByName("textBlock"+displayIndex));
+                        if (buttonEnd.hidden === true){
+                            buttonEnd.hidden = false;
+                            buttonEnd.addEventListener("click", finishRemainingPoints);
+                        }
                     }
                 }
 
-                document.getElementById("submitPoints").hidden = false;
             }
 
-            function deleteRowFun(index){
-                this.index = index;
-                polygon.remPoint(this.index);
-                pointsList.splice(this.index, 1);
-                pTable.deleteRow(this.index+2);
-                if (pTable.rows.length === 2){
-                    document.getElementById("submitPoints").hidden = true;
-                    pTable.hidden = true;
+            function sendAddRequest(point) {
+                let httpRequest = new XMLHttpRequest();
+                if (!httpRequest) {
+                    alert('Giving up :( Cannot create an XML HTTP instance');
+                    return false;
                 }
-            }
+                httpRequest.onreadystatechange = alertContents;
+                httpRequest.open('POST', 'https://0.0.0.0/test.html/gs-robot/cmd/position/add_position');
+                httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+                httpRequest.send(JSON.stringify(point));
 
-            // 点击提交按钮像服务器提交已标记点/线段/路径/路径组信息
-            (function() {
-                let httpRequest;
-                document.getElementById("submitPoints").addEventListener('click', makeRequestAlt);
+                console.log(httpRequest);
 
-                function makeRequest() {
-
-                    httpRequest = new XMLHttpRequest();
-
-                    if (!httpRequest) {
-                        alert('Giving up :( Cannot create an XML HTTP instance');
-                        return false;
+                function  alertContents() {
+                    if (httpRequest.readyState === XMLHttpRequest.DONE) {
+                        if (httpRequest.status === 200) {
+                            /**
+                             * todo： 在服务器上线后这里应该为发送失败的情况
+                             * */
+                            alert("send point " + point.name + " error");
+                            addFailList.push(point);
+                        }
                     }
-                    httpRequest.onreadystatechange = alertContents;
-                    httpRequest.open('POST', 'https://0.0.0.0/test.html/gs-robot/cmd/generate_graph_path');
-                    httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
-                    // httpRequest.send(generateResultJSON());
-
-                    console.log(httpRequest);
                 }
+            }
 
-                function makeRequestAlt() {
-                    // 在服务器上线后需要大量修改
-
-                    <%--httpRequest = new XMLHttpRequest();--%>
-                    <%--if (!httpRequest) {--%>
-                    <%--    alert('Giving up :( Cannot create an XML HTTP instance');--%>
-                    <%--    return false;--%>
-                    <%--}--%>
-                    <%--httpRequest.open('POST', 'https://127.0.0.1/test.html/gs-robot/cmd/generate_graph_path');--%>
-                    <%--httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')--%>
-                    <%--for (let i = 0; i < coords.length; i++){--%>
-
-                    <%--    coords[i].mapName = "${requestScope.name}";--%>
-                    <%--    // httpRequest.send(coords[i].toJSONAlt());--%>
-                    <%--    if (i === coords.length - 1){--%>
-                    <%--        httpRequest.onreadystatechange = alertContents;--%>
-                    <%--        httpRequest.send(coords[i].toJSON());--%>
-                    <%--    }else{--%>
-                    <%--        // httpRequest.onreadystatechange = alertContentsAlt;--%>
-
-                    <%--    }--%>
-
-                    <%--    console.log(coords[i].toJSON());--%>
-                    <%--    console.log(httpRequest);--%>
-                    <%--}--%>
-
-                    <%--for (let i = 0; i < coords.length; i++){--%>
-                    <%--    if (i === coords.length - 1){--%>
-                    <%--        httpRequest.onreadystatechange = alertContents;--%>
-                    <%--    }else{--%>
-                    <%--        httpRequest.onreadystatechange = alertContentsAlt;--%>
-                    <%--    }--%>
-                    <%--    coords[i].mapName = "${requestScope.name}";--%>
-                    <%--    httpRequest.send(coords[i].toJSONAlt());--%>
-                    <%--}--%>
+            function sendDeleteRequest(point) {
+                let httpRequest = new XMLHttpRequest();
+                if (!httpRequest) {
+                    alert('Giving up :( Cannot create an XML HTTP instance');
+                    return false;
                 }
+                httpRequest.onreadystatechange = alertContents;
+
+                let url = "/gs-robot/cmd/delete_position?";
+                url += "map_name=" + point.mapName + "&position_name=" + point.name;
+                console.log("url ", url);
+                httpRequest.open('GET', url);
+                httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+                httpRequest.send(null);
+
+                console.log(httpRequest);
 
                 function alertContents() {
                     if (httpRequest.readyState === XMLHttpRequest.DONE) {
                         if (httpRequest.status === 200) {
-                            alert(httpRequest.responseText);
-                        } else {
-                            alert('sent');
+                            /**
+                             * todo： 在服务器上线后这里应该为发送失败的情况
+                             * */
+                            alert("delete point " + point.name + " error");
+                            deleteFailList.push(point);
                         }
                     }
                 }
+            }
 
-                function alertContentsAlt() {
-                    if (httpRequest.readyState === XMLHttpRequest.DONE) {
-                        if (httpRequest.status === 200) {
-                            alert("error occurred");
-                            // 这里应该放到 else 框体中，为测试用进行对调
-                        } else {
-                        }
-                    }
+            // 完成所有失败请求
+            function finishRemainingPoints() {
+                for (let point of deleteFailList){
+                    sendDeleteRequest(point);
                 }
-            })();
+                for (let point of addFailList){
+                    sendAddRequest(point);
+                }
+                if (addFailList.length !== 0 || deleteFailList.length !== 0){
+                    alert("error occurred, please retry");
+                }else{
+                    buttonEnd.hidden = true;
+                    buttonEnd.removeEventListener("click", finishRemainingPoints);
+                }
 
-            // 选择标记点的类型，只有在选择后才能进行点的标记
-            let radios = document.querySelectorAll('input[name="ptype"]');
-            for (const radio of radios) {
-                    radio.addEventListener("change", function () {
-                        stage.removeAllEventListeners();
-                        registerMouseHandlers();
-                    })
+                stage.removeAllEventListeners();
+                for (let radio of radios){
+                    radio.checked = false;
+                }
+
             }
 
             // 加载各种地图上的特殊对象
@@ -521,35 +549,12 @@
                 let mapObjs = ${requestScope.json};
                 console.log(JSON.stringify(mapObjs));
 
-                // let obstacles_polylines;
                 let obj;
-                let color;
                 for (let key in mapObjs){
+                    if (key.includes("World")) continue;
                     obj = mapObjs[key];
-                    switch (key) {
-                        case "carpets":
-                            color = createjs.Graphics.getRGB(176, 219, 67, 1);
-                            break;
-                        case "decelerations":
-                            color = createjs.Graphics.getRGB(18, 234, 234, 1);
-                            break;
-                        case "displays":
-                            color = createjs.Graphics.getRGB(188, 231, 253, 1);
-                            break;
-                        case "highlight":
-                            color = createjs.Graphics.getRGB(196, 146, 177, 1);
-                            break;
-                        case "obstacles":
-                            color = createjs.Graphics.getRGB(219, 39, 99, 1);
-                            break;
-                        case "slopes":
-                            color = createjs.Graphics.getRGB(240, 247, 87, 1);
-                            break;
-                        default :
-                            break;
-                    }
-                    for (let key in obj){
-                        drawObj(key, obj[key], color);
+                    for (let shape in obj){
+                        drawObj(shape, obj[shape], colorMap.get(key));
                     }
                 }
             }
@@ -647,9 +652,22 @@
                         break;
                     default:
                         break;
-
                 }
                 stage.update();
+            }
+
+            // 根据障碍物在障碍物列表中的顺序添加序号
+            function createNo(pos, index) {
+                let textBlock = new createjs.Text(index, "2px Arial");
+                // 2px 大小 arial 字体
+                textBlock.x = pos.x;
+                textBlock.y = -pos.y;
+                // obj.points 中坐标使用的坐标系中 y 轴正向朝上，stage 中坐标系 y 轴正向朝下
+                textBlock.shadow = new createjs.Shadow("#000000", 3, 3, 3);
+                textBlock.name = "textBlock"+index;
+                // 添加阴影，有助于辨认
+                console.log("text x y " + x + " , " + textBlock.y )
+                stage.addChild(textBlock);
             }
         }
 
@@ -703,6 +721,7 @@
             <th colspan="4">已标记点</th>
         </tr>
         <tr>
+            <th>序号</th>
             <th>类型</th>
             <th>坐标</th>
             <th>偏向角</th>
@@ -712,9 +731,8 @@
     <tbody>
     </tbody>
 </table>
-<button id="submitPoints" type="button" hidden>
-    提交
+<button id="buttonActionEnd" type="button" hidden>
+    结束标点
 </button>
-
 </body>
 </html>
