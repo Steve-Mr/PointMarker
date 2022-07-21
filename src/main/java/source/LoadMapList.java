@@ -18,7 +18,7 @@ import java.util.Objects;
 
 public class LoadMapList {
 
-    String url = "https://0.0.0.0/gs-robot/data/maps";
+    String url = "http://192.168.123.148:8080/gs-robot/data/maps";
     String charset = java.nio.charset.StandardCharsets.UTF_8.name();
 
     String jsonString = "{\n" +
@@ -75,12 +75,11 @@ public class LoadMapList {
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
-//                String jsonString = response.body();
+                String jsonString = response.body();
 
                 JSONObject jsonObject = new JSONObject(jsonString);
                 if (Objects.equals(jsonObject.getString("msg"), "successed")) {
                     JSONArray mapArray = jsonObject.getJSONArray("data");
-
                     Type listType = new TypeToken<List<Map>>(){}.getType();
 
                     mapList = new Gson().fromJson(mapArray.toString(), listType);
@@ -92,16 +91,6 @@ public class LoadMapList {
             e.printStackTrace();
         }
 
-        // only for test when server if offline
-        JSONObject jsonObject = new JSONObject(jsonString);
-        System.out.println(jsonObject);
-        System.out.println(jsonObject.getString("msg"));
-        if (Objects.equals(jsonObject.getString("msg"), "successed")) {
-            JSONArray mapArray = jsonObject.getJSONArray("data");
-            Type listType = new TypeToken<List<Map>>(){}.getType();
-            mapList = new Gson().fromJson(mapArray.toString(), listType);
-            System.out.println(mapList.get(0).getName());
-        }
 
         return mapList;
     }

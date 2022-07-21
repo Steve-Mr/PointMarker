@@ -302,7 +302,7 @@ public class ServletLoadMap extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-//        String url = "https://0.0.0.0/gs-robot/data/map_png?map_name=";
+        String url = "http://192.168.123.148:8080/gs-robot/data/map_png?map_name=";
 
         String mapUrl = "\"http://support.agilex.ai/storage/2021/04-01/YMIT1Bmen7ruIcdXWxDRVpIWIK4krZk2Eee3RFvB.png\"";
 
@@ -310,18 +310,20 @@ public class ServletLoadMap extends HttpServlet {
         ArrayList<?> maps = (ArrayList<?>) request.getSession().getAttribute("maplist");
         Map map = (Map)maps.get(Integer.parseInt(request.getParameter("index")));
 
-//        request.setAttribute("url", url + map.getName());
+        request.setAttribute("url", url + map.getName());
         if (map.getName().isEmpty()){
             request.setAttribute("status", false);
         }else {
             request.setAttribute("status", true);
-            request.setAttribute("url", mapUrl);
+            request.setAttribute("url", url+map.getName());
             request.setAttribute("name", map.getName());
             request.setAttribute("resolution", map.getResolution());
             request.setAttribute("originX", map.getOriginX()*map.getResolution());
             request.setAttribute("originY", map.getOriginY()*map.getResolution());
 
-            request.setAttribute("json", jsonString);
+//            request.setAttribute("json", jsonString);
+            request.setAttribute("mapObj", "{}");
+
         }
 
         RequestDispatcher dispatcher = null;

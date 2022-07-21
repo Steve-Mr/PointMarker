@@ -11,6 +11,9 @@
   <component name="ChangeListManager">
     <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="障碍物标记增加序号显示&#10;完善流程">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/source/LoadMapList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/source/LoadMapList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/mapObj.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapObj.jsp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/web/mapPoint.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapPoint.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -225,6 +228,8 @@
       <workItem from="1657760079191" duration="27089000" />
       <workItem from="1657844372588" duration="20407000" />
       <workItem from="1657937641077" duration="12919000" />
+      <workItem from="1657968993374" duration="3000" />
+      <workItem from="1658397788508" duration="8162000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>

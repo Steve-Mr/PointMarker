@@ -49,7 +49,7 @@
       let stage = new createjs.Stage(canvas);
       let table = document.getElementById("ptable"); // 障碍物表格
 
-      let bitmap = new createjs.Bitmap(${requestScope.url});
+      let bitmap = new createjs.Bitmap("${requestScope.url}");
       bitmap.scaleX = ${requestScope.resolution};
       bitmap.scaleY = ${requestScope.resolution};
 
@@ -579,7 +579,7 @@
 
       // 加载各种地图上的特殊对象
       function loadMapObj() {
-        let mapObjs = ${requestScope.json};
+        let mapObjs = ${requestScope.mapObj};
         console.log(JSON.stringify(mapObjs));
 
         let obj;

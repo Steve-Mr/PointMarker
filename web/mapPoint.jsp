@@ -49,9 +49,11 @@
             let stage = new createjs.Stage(canvas);
             let pTable = document.getElementById("ptable"); // 已标记点表格
 
-            let bitmap = new createjs.Bitmap(${requestScope.url});
+            let bitmap = new createjs.Bitmap("${requestScope.url}");
             bitmap.scaleX = ${requestScope.resolution};
             bitmap.scaleY = ${requestScope.resolution};
+
+            console.log("url " + "${requestScope.url}")
 
             let pointsList = [];
             let addFailList = [];
@@ -473,8 +475,9 @@
                     return false;
                 }
                 httpRequest.onreadystatechange = alertContents;
-                httpRequest.open('POST', 'https://0.0.0.0/test.html/gs-robot/cmd/position/add_position');
+                httpRequest.open('POST', 'http://192.168.123.148:8080/gs-robot/cmd/add_position');
                 httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
+                // httpRequest.withCredentials = true;
                 httpRequest.send(JSON.stringify(point));
 
                 console.log(httpRequest);
@@ -546,7 +549,7 @@
 
             // 加载各种地图上的特殊对象
             function loadMapObj() {
-                let mapObjs = ${requestScope.json};
+                let mapObjs = ${requestScope.mapObj};
                 console.log(JSON.stringify(mapObjs));
 
                 let obj;
