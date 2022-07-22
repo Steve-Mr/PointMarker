@@ -22,6 +22,10 @@
 
     <script type="text/javascript">
 
+        let SERVER_ADDRESS = "http://192.168.123.113:8088";
+        let URL_SENDPOINT = SERVER_ADDRESS + "/gs-robot/cmd/add_position";
+        let URL_DELETEPOINT = SERVER_ADDRESS + "/gs-robot/cmd/delete_position?";
+
         function init() {
             console.log("init...");
 
@@ -475,19 +479,16 @@
                     return false;
                 }
                 httpRequest.onreadystatechange = alertContents;
-                httpRequest.open('POST', 'http://192.168.123.148:8080/gs-robot/cmd/add_position');
+                httpRequest.open('POST', URL_SENDPOINT + "?position_name=" + point.name + "&type=" + point.type);
                 httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
-                // httpRequest.withCredentials = true;
                 httpRequest.send(JSON.stringify(point));
 
                 console.log(httpRequest);
 
-                function  alertContents() {
+                function alertContents() {
                     if (httpRequest.readyState === XMLHttpRequest.DONE) {
-                        if (httpRequest.status === 200) {
-                            /**
-                             * todo： 在服务器上线后这里应该为发送失败的情况
-                             * */
+                        let resJSON = JSON.parse(httpRequest.responseText);
+                        if (resJSON.msg !== "successed"){
                             alert("send point " + point.name + " error");
                             addFailList.push(point);
                         }
@@ -503,8 +504,8 @@
                 }
                 httpRequest.onreadystatechange = alertContents;
 
-                let url = "/gs-robot/cmd/delete_position?";
-                url += "map_name=" + point.mapName + "&position_name=" + point.name;
+                // let url = "/gs-robot/cmd/delete_position?";
+                let url = URL_DELETEPOINT + "map_name=" + point.mapName + "&position_name=" + point.name;
                 console.log("url ", url);
                 httpRequest.open('GET', url);
                 httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
@@ -514,12 +515,10 @@
 
                 function alertContents() {
                     if (httpRequest.readyState === XMLHttpRequest.DONE) {
-                        if (httpRequest.status === 200) {
-                            /**
-                             * todo： 在服务器上线后这里应该为发送失败的情况
-                             * */
+                        let resJSON = JSON.parse(httpRequest.responseText);
+                        if (resJSON.msg !== "successed"){
                             alert("delete point " + point.name + " error");
-                            deleteFailList.push(point);
+                            addFailList.push(point);
                         }
                     }
                 }

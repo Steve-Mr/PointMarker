@@ -22,6 +22,9 @@
 
   <script type="text/javascript">
 
+    let SERVER_ADDRESS = "http://192.168.123.113:8088";
+    let URL_SENDOBJ = SERVER_ADDRESS + "/gs-robot/cmd/update_virtual_obstacles?";
+
     function init() {
       console.log("init...");
 
@@ -540,12 +543,15 @@
 
           httpRequest = new XMLHttpRequest();
 
+          let url = URL_SENDOBJ + "map_name=" + "${requestScope.name}" + "&obstacle_name="
+
           if (!httpRequest) {
             alert('Giving up :( Cannot create an XML HTTP instance');
             return false;
           }
           httpRequest.onreadystatechange = alertContents;
-          httpRequest.open('POST', 'https://0.0.0.0/VirtualObstacle/gs-robot/cmd/update_virtual_obstacles?');
+          console.log("url", url)
+          httpRequest.open('POST', url);
           httpRequest.setRequestHeader('Content-Type', 'application/json; charset=UTF-8')
           httpRequest.send(generateResultJSON());
 
@@ -554,10 +560,9 @@
 
         function alertContents() {
           if (httpRequest.readyState === XMLHttpRequest.DONE) {
-            if (httpRequest.status === 200) {
-              alert(httpRequest.responseText);
-            } else {
-              alert('sent');
+            let resJSON = JSON.parse(httpRequest.responseText);
+            if (resJSON.msg !== "successed"){
+              alert("update obstacles failed");
             }
           }
         }

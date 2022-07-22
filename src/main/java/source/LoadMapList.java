@@ -1,5 +1,6 @@
 package source;
 
+import Util.Util;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import model.Map;
@@ -18,7 +19,6 @@ import java.util.Objects;
 
 public class LoadMapList {
 
-    String url = "http://192.168.123.148:8080/gs-robot/data/maps";
     String charset = java.nio.charset.StandardCharsets.UTF_8.name();
 
     String jsonString = "{\n" +
@@ -70,7 +70,7 @@ public class LoadMapList {
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(url))
+                .uri(URI.create(Util.URL_MAPLIST))
                 .build();
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -90,7 +90,6 @@ public class LoadMapList {
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();
         }
-
 
         return mapList;
     }

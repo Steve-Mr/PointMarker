@@ -1,6 +1,9 @@
 package servlet;
 
+import Util.Util;
 import model.Map;
+import org.json.JSONObject;
+import source.LoadMapObj;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -304,25 +307,27 @@ public class ServletLoadMap extends HttpServlet {
 
         String url = "http://192.168.123.148:8080/gs-robot/data/map_png?map_name=";
 
-        String mapUrl = "\"http://support.agilex.ai/storage/2021/04-01/YMIT1Bmen7ruIcdXWxDRVpIWIK4krZk2Eee3RFvB.png\"";
+//        String mapUrl = "\"http://support.agilex.ai/storage/2021/04-01/YMIT1Bmen7ruIcdXWxDRVpIWIK4krZk2Eee3RFvB.png\"";
 
         // 在 session 中保存地图，再次请求地图可能会有改变
         ArrayList<?> maps = (ArrayList<?>) request.getSession().getAttribute("maplist");
         Map map = (Map)maps.get(Integer.parseInt(request.getParameter("index")));
 
-        request.setAttribute("url", url + map.getName());
+        JSONObject mapObj = new LoadMapObj().getMapObj(Util.URL_GETOBSTACLES + map.getName());
+        System.out.println(mapObj.toString());
+
+        request.setAttribute("url", Util.URL_MAP + map.getName());
         if (map.getName().isEmpty()){
             request.setAttribute("status", false);
         }else {
             request.setAttribute("status", true);
-            request.setAttribute("url", url+map.getName());
+            request.setAttribute("url", Util.URL_MAP +map.getName());
             request.setAttribute("name", map.getName());
             request.setAttribute("resolution", map.getResolution());
             request.setAttribute("originX", map.getOriginX()*map.getResolution());
             request.setAttribute("originY", map.getOriginY()*map.getResolution());
 
-//            request.setAttribute("json", jsonString);
-            request.setAttribute("mapObj", "{}");
+            request.setAttribute("mapObj", mapObj.toString());
 
         }
 
