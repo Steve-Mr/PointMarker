@@ -328,6 +328,7 @@ public class ServletLoadMap extends HttpServlet {
             request.setAttribute("originY", map.getOriginY()*map.getResolution());
 
             request.setAttribute("mapObj", mapObj.toString());
+//            request.setAttribute("mapObj", jsonString);
 
         }
 

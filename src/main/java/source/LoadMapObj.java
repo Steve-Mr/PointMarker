@@ -31,7 +31,7 @@ public class LoadMapObj {
 
                 JSONObject jsonObject = new JSONObject(jsonString);
                 System.out.println(jsonString);
-                return jsonObject.getJSONObject("data");
+                return new JSONObject(jsonObject.getString("data"));
             }
         } catch (InterruptedException | IOException e) {
             e.printStackTrace();

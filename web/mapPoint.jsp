@@ -317,7 +317,7 @@
                     +new Date().getMonth().toString() +new Date().getDate().toString()
                     +new Date().getMilliseconds().toString()+ "_"
                     + (Math.random()).toString().slice(2, 7);
-                this.mapName = options.mapName || "${name}";
+                this.mapName = options.mapName || "${requestScope.name}";
 
                 pointsList.push({
                     angle: this.yaw,
@@ -434,6 +434,7 @@
                                 alert("please input point name");
                                 return;
                             }
+                            let index = button.parentNode.parentNode.rowIndex - 2;
                             pointsList[index].name = element.value;
                             sendDeleteRequest(pointsList[index]);
                             sendAddRequest(pointsList[index]);
@@ -606,6 +607,7 @@
                         }
                         break;
                     case "polygons":
+                        let polygon = createPolygon();
                         for (let i = 0; i < obj.length; i++){
                             for (let j = 0; j < obj[i].length; j++){
                                 let convertedPoint = getOnStageCoord(obj[i][j]);

@@ -599,7 +599,6 @@
 
       // 根据坐标等参数在地图上绘制特殊对象
       function drawObj(objShape, obj, type) {
-
         switch (objShape.toString()) {
           case "circles":
             for (let i = 0; i < obj.length; i++){
@@ -651,6 +650,7 @@
             break;
           case "polygons":
             for (let i = 0; i < obj.length; i++){
+              let polygon = createPolygon(colorMap.get(type))
               let points = [];
               for (let j = 0; j < obj[i].length; j++){
                 let convertedPoint = getOnStageCoord(obj[i][j]);
