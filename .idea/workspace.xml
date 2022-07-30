@@ -9,10 +9,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="完善和服务器的连接">
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/img.png" afterDir="false" />
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="README">
+      <change afterPath="$PROJECT_DIR$/src/main/java/source/LoadPrePoints.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Util/Util.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Util/Util.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/mapPoint.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapPoint.jsp" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -23,8 +26,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="HTML File" />
-        <option value="Class" />
         <option value="Jsp File" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -234,7 +237,7 @@
       <workItem from="1658804511248" duration="1808000" />
       <workItem from="1658891435113" duration="823000" />
       <workItem from="1659075187547" duration="787000" />
-      <workItem from="1659169149625" duration="2311000" />
+      <workItem from="1659169149625" duration="12759000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
@@ -397,7 +400,21 @@
       <option name="project" value="LOCAL" />
       <updated>1658583193032</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="README">
+      <created>1659171537726</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1659171537726</updated>
+    </task>
+    <task id="LOCAL-00025" summary="README">
+      <created>1659171570402</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1659171570402</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -443,7 +460,8 @@
     <MESSAGE value="整理代码" />
     <MESSAGE value="障碍物标记增加序号显示&#10;完善流程" />
     <MESSAGE value="完善和服务器的连接" />
-    <option name="LAST_COMMIT_MESSAGE" value="完善和服务器的连接" />
+    <MESSAGE value="README" />
+    <option name="LAST_COMMIT_MESSAGE" value="README" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

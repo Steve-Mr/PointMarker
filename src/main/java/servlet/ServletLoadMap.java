@@ -2,8 +2,10 @@ package servlet;
 
 import Util.Util;
 import model.Map;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import source.LoadMapObj;
+import source.LoadPrePoints;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -15,297 +17,8 @@ import java.util.Objects;
 @WebServlet(name = "ServletLoadMap", value = "/ServletLoadMap")
 public class ServletLoadMap extends HttpServlet {
 
-    String jsonString = "{\n" +
-            "      \"carpets\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"carpetsWorld\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"decelerations\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            [\n" +
-            "               {\n" +
-            "                  \"x\":6,\n" +
-            "                  \"y\":51\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":8,\n" +
-            "                  \"y\":52\n" +
-            "               }\n" +
-            "            ],\n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"decelerationsWorld\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"displays\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"displaysWorld\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"highlight\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"highlightWorld\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"obstacles\":{\n" +
-            "         \"circles\":[\n" +
-            "            {\n" +
-            "                  \"x\":72,\n" +
-            "                  \"y\":107,\n" +
-            "                  \"r\":5\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":87,\n" +
-            "                  \"y\":66,\n" +
-            "                  \"r\":2.5\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":77,\n" +
-            "                  \"y\":79,\n" +
-            "                  \"r\":2.5\n" +
-            "               }\n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            [\n" +
-            "               {\n" +
-            "                  \"x\":106,\n" +
-            "                  \"y\":51\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":108,\n" +
-            "                  \"y\":52\n" +
-            "               }\n" +
-            "            ],\n" +
-            "            [\n" +
-            "               {\n" +
-            "                  \"x\":9,\n" +
-            "                  \"y\":59\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":13,\n" +
-            "                  \"y\":57\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":19,\n" +
-            "                  \"y\":59\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":18,\n" +
-            "                  \"y\":63\n" +
-            "               }\n" +
-            "            ]\n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            [\n" +
-            "               {\n" +
-            "                  \"x\":86,\n" +
-            "                  \"y\":35\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":93,\n" +
-            "                  \"y\":26\n" +
-            "               }\n" +
-            "            ]\n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"obstaclesWorld\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            [\n" +
-            "               {\n" +
-            "                  \"x\":-1.1227102611213926,\n" +
-            "                  \"y\":0.042556944116949325\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":-5.0227103192359213,\n" +
-            "                  \"y\":-2.0074430864304311\n" +
-            "               }\n" +
-            "            ],\n" +
-            "            [\n" +
-            "               {\n" +
-            "                  \"x\":50.1772898625582453,\n" +
-            "                  \"y\":-2.6074430953711278\n" +
-            "               },\n" +
-            "               {\n" +
-            "                  \"x\":8.8772898878902193,\n" +
-            "                  \"y\":-4.457443122938276\n" +
-            "               }\n" +
-            "            ]\n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"slopes\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      },\n" +
-            "      \"slopesWorld\":{\n" +
-            "         \"circles\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"lines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polygons\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"polylines\":[\n" +
-            "            \n" +
-            "         ],\n" +
-            "         \"rectangles\":[\n" +
-            "            \n" +
-            "         ]\n" +
-            "      }\n" +
-            "   }";
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-        String url = "http://192.168.123.148:8080/gs-robot/data/map_png?map_name=";
 
 //        String mapUrl = "\"http://support.agilex.ai/storage/2021/04-01/YMIT1Bmen7ruIcdXWxDRVpIWIK4krZk2Eee3RFvB.png\"";
 
@@ -315,6 +28,10 @@ public class ServletLoadMap extends HttpServlet {
 
         JSONObject mapObj = new LoadMapObj().getMapObj(Util.URL_GETOBSTACLES + map.getName());
         System.out.println(mapObj.toString());
+
+        JSONArray prePoints = new LoadPrePoints().getPrePoints(Util.URL_GETPOINTS + map.getName() + "&type=");
+        System.out.println(Util.URL_GETPOINTS + map.getName() + "&type=");
+        System.out.println(prePoints.toString());
 
         request.setAttribute("url", Util.URL_MAP + map.getName());
         if (map.getName().isEmpty()){
@@ -328,6 +45,7 @@ public class ServletLoadMap extends HttpServlet {
             request.setAttribute("originY", map.getOriginY()*map.getResolution());
 
             request.setAttribute("mapObj", mapObj.toString());
+            request.setAttribute("prePoints", prePoints.toString());
 //            request.setAttribute("mapObj", jsonString);
 
         }

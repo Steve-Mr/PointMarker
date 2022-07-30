@@ -90,7 +90,7 @@
             // 创建 polygon，用于显示标记点和将标记点连接——即线段
             let polygon = new ROS2D.PolygonMarker({
                 pointColor: createjs.Graphics.getRGB(255, 0, 0, 0.66),
-                lineColor: createjs.Graphics.getRGB(100, 100, 255, 0.33),
+                lineColor: createjs.Graphics.getRGB(100, 100, 255, 0),
                 pointCallBack: pointCallBack,
                 lineCallBack: lineCallBack,
             });
@@ -151,6 +151,8 @@
                 loadMapObj();
                 // 选择标记点的类型，只有在选择后才能进行点的标记
 
+                loadPointsMarked();
+
                 for (const radio of radios) {
                     radio.addEventListener("change", function () {
                         stage.removeAllEventListeners();
@@ -158,6 +160,16 @@
                     })
                 }
             }
+
+            let colorPoint = new Map([
+                ["0", createjs.Graphics.getRGB(100, 110, 120, 1)],
+                ["1", createjs.Graphics.getRGB(187, 77, 0, 1)],
+                ["2", createjs.Graphics.getRGB(220, 204, 187, 1)],
+                ["3", createjs.Graphics.getRGB(234, 180, 100, 1)],
+                ["4", createjs.Graphics.getRGB(167, 117, 77, 1)],
+                ["5", createjs.Graphics.getRGB(33, 250, 144, 1)],
+
+            ])
 
             // 不同形状在地图上对应不同的颜色
             let colorMap = new Map([
@@ -256,9 +268,12 @@
                             }
                             else if (stage.mouseInBounds === true && clickedPolygon === false) {
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
+                                let pointType = document.querySelector('input[name="ptype"]:checked').value
+                                // 用来使点的颜色根据类型区分，polygon 更新点颜色不影响已经绘制的点
+                                polygon.pointColor = colorPoint.get(pointType)
                                 polygon.addPoint(pos);
                                 addToPointsList({
-                                    type: document.querySelector('input[name="ptype"]:checked').value,
+                                    type: pointType,
                                     x: pos.x,
                                     y: pos.y,
                                 });
@@ -297,6 +312,7 @@
             function calYaw(pointsList){
                 for (let index = 0; index < pointsList.length; index++){
                     let point1 = pointsList[index];
+                    if (point1.angle !== 9999) continue;
                     let point2;
                     if(index !== pointsList.length-1){
                         point2 = pointsList[index+1];
@@ -311,7 +327,7 @@
                 this.type = options.type || 6;
                 this.x = options.x;
                 this.y = options.y;
-                this.yaw = options.yaw || 0.0;
+                this.yaw = options.yaw || 9999;
                 this.name = options.name ||
                     "Point_"+ new Date().getFullYear().toString()
                     +new Date().getMonth().toString() +new Date().getDate().toString()
@@ -342,7 +358,7 @@
 
                 // 表格中已经存在两行，所以标记点在表格中的对应位置需要 +2
                 let tableIndex;
-                let tr, cell0, cell1, cell2, cell3, cell4,    cell5;
+                let tr, cell0, cell1, cell2, cell3, cell4, cell5, cell6;
 
                 // 当一个点发生变动时需要更新附近点
                 if (index === 0) {
@@ -359,9 +375,6 @@
 
                 function updateTable(pointsList, index) {
                     calYaw(pointsList);
-                    for (let i = 0; i < pointsList.length; i++) {
-                        console.log(pointsList[i].toString());
-                    }
                     tableIndex = index + 2;
 
                     // 标记点位置在最后 —— 需要添加显示该点的行
@@ -378,6 +391,7 @@
                         cell2 = tr.insertCell(3);
                         cell3 = tr.insertCell(4);
                         cell4 = tr.insertCell(5);
+                        cell6 = tr.insertCell(6);
                     }else{
                         tr = pTable.rows[tableIndex];
                         cell5 = tr.cells[0];
@@ -386,6 +400,7 @@
                         cell2 = tr.cells[3];
                         cell3 = tr.cells[4];
                         cell4 = tr.cells[5];
+                        cell6 = tr.cells[6];
                     }
 
                     cell5.innerHTML = cell5.parentNode.rowIndex - 2;
@@ -408,7 +423,6 @@
 
                     cell3.appendChild(element);
                     element.value = pointsList[index].name;
-                    console.log("===");
 
                     let button;
                     if (cell4.childNodes.length !== 0){
@@ -420,32 +434,46 @@
                         button.addEventListener("click", deleteRow);
                     }
 
+                    let buttonSave;
+                    if (cell6.childNodes.length !== 0){
+                        buttonSave = cell6.childNodes[0];
+                        buttonSave.hidden = true;
+                    }else{
+                        buttonSave = document.createElement("button");
+                        buttonSave.innerText = "save";
+                        cell6.appendChild(buttonSave);
+                        buttonSave.addEventListener("click", makeChange);
+                        buttonSave.hidden = true;
+                    }
+
+
                     function updateValue() {
-                        // 修改输入框内容时删除键变为保存键
-                        // 只有输入框中值不为空才可以保存
 
-                        button.innerText = "save";
-                        button.disabled = element.value.length === 0;
-                        button.removeEventListener("click", deleteRow);
-                        button.addEventListener("click", makeChange);
+                        if (buttonSave.hidden === true)
+                            buttonSave.hidden = false
+                    }
 
-                        function makeChange() {
-                            if (element.value.length === 0) {
-                                alert("please input point name");
-                                return;
-                            }
-                            let index = button.parentNode.parentNode.rowIndex - 2;
-                            pointsList[index].name = element.value;
-                            sendDeleteRequest(pointsList[index]);
-                            sendAddRequest(pointsList[index]);
-                            button.innerText = "delete";
-                            button.removeEventListener("click", makeChange);
-                            button.addEventListener("click", deleteRow);
-                            if (buttonEnd.hidden === true){
-                                buttonEnd.hidden = false;
-                                buttonEnd.addEventListener("click", finishRemainingPoints);
-                            }
+                    function makeChange() {
+                        if (element.value.length === 0) {
+                            alert("please input point name");
+                            return;
                         }
+                        let index = button.parentNode.parentNode.rowIndex - 2;
+                        new Promise(function (resolve, reject) {
+                            let result = sendDeleteRequest(pointsList[index]);
+                            resolve(result)
+                        })
+                            .then(function (data) {
+                                pointsList[index].name = element.value;
+                                let result = sendAddRequest(pointsList[index]);
+                            })
+                            .then(function () {
+                                buttonSave.hidden = true
+                                if (buttonEnd.hidden === true){
+                                    buttonEnd.hidden = false;
+                                    buttonEnd.addEventListener("click", finishRemainingPoints);
+                                }
+                            })
                     }
 
                     function deleteRow() {
@@ -495,6 +523,8 @@
                         }
                     }
                 }
+
+                return true;
             }
 
             function sendDeleteRequest(point) {
@@ -547,6 +577,47 @@
 
             }
 
+            // 加载已经标记过的点
+            function loadPointsMarked() {
+                let prePoints = ${requestScope.prePoints}
+                for (let point of prePoints){
+                    let convertedPoint = getOnStageCoord({
+                        x: point.gridX,
+                        y: point.gridY,
+                    })
+                    let pos = {
+                        x: convertedPoint.x,
+                        y: convertedPoint.y,
+                        z: 0
+                    }
+                    let pointType = point.type.toString()
+                    let pointName = point.name.toString()
+                    let pointAngle = point.angle.toString()
+
+                    drawPoint(pos, pointType, pointName, pointAngle)
+                }
+
+            }
+
+            // 根据类型和坐标绘制点
+            function drawPoint(pos, pointType, pointName, pointAngle) {
+
+                // 用来使点的颜色根据类型区分，polygon 更新点颜色不影响已经绘制的点
+                polygon.pointColor = colorPoint.get(pointType)
+                polygon.addPoint(pos);
+                addToPointsList({
+                    yaw: pointAngle,
+                    type: pointType,
+                    x: pos.x,
+                    y: pos.y,
+                    name: pointName
+                });
+
+                createNo(pos, pointsList.length-1);
+
+                printCoords(pointsList, pointsList.length-1);
+
+            }
             // 加载各种地图上的特殊对象
             function loadMapObj() {
                 let mapObjs = ${requestScope.mapObj};
@@ -670,7 +741,6 @@
                 textBlock.shadow = new createjs.Shadow("#000000", 3, 3, 3);
                 textBlock.name = "textBlock"+index;
                 // 添加阴影，有助于辨认
-                console.log("text x y " + x + " , " + textBlock.y )
                 stage.addChild(textBlock);
             }
         }
@@ -685,22 +755,40 @@
     <p>请选择标记点类型</p>
     <div>
         <input type="radio" id="type0" name="ptype" value="0">
-        <label for="type0">初始点</label>
+        <label for="type0">
+            <canvas width="10" height="10" style="background-color: rgb(100, 110, 120)">Carpets</canvas>
+            初始点
+        </label>
 
         <input type="radio" id="type1" name="ptype" value="1">
-        <label for="type1">充电点</label>
+        <label for="type1">
+            <canvas width="10" height="10" style="background-color: rgb(187, 77, 0)">Carpets</canvas>
+            充电点
+        </label>
 
         <input type="radio" id="type2" name="ptype" value="2">
-        <label for="type2">导航点</label>
+        <label for="type2">
+            <canvas width="10" height="10" style="background-color: rgb(220, 204, 187)">Carpets</canvas>
+            导航点
+        </label>
 
         <input type="radio" id="type3" name="ptype" value="3">
-        <label for="type3">RFID 点</label>
+        <label for="type3">
+            <canvas width="10" height="10" style="background-color: rgb(234, 180, 100)">Carpets</canvas>
+            RFID 点
+        </label>
 
         <input type="radio" id="type4" name="ptype" value="4">
-        <label for="type4">注水点</label>
+        <label for="type4">
+            <canvas width="10" height="10" style="background-color: rgb(167, 117, 77)">Carpets</canvas>
+            注水点
+        </label>
 
         <input type="radio" id="type5" name="ptype" value="5">
-        <label for="type5">排水点</label>
+        <label for="type5">
+            <canvas width="10" height="10" style="background-color: rgb(33, 250, 144)">Carpets</canvas>
+            排水点
+        </label>
     </div>
 </form>
 <canvas id="map" width="800" height="800" style="border:1px solid #f11010;"></canvas>
