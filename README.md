@@ -10,6 +10,6 @@
 
 ## 运行
 
-地图列表地址：```http://localhost:8080/PointMarker_war_exploded/maplist```
+地图列表地址：```http://localhost:8080/PointMarker_war_exploded/maplist```  
 ![地图列表](img.png)
 
