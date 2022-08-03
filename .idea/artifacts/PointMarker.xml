@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="PointMarker">
+    <output-path>$PROJECT_DIR$/out/artifacts/PointMarker</output-path>
+    <root id="archive" name="PointMarker.war">
+      <element id="artifact" artifact-name="PointMarker:war exploded" />
+    </root>
+  </artifact>
+</component>
