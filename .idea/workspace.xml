@@ -2,19 +2,14 @@
 <project version="4">
   <component name="ArtifactsWorkspaceSettings">
     <artifacts-to-build>
-      <artifact name="PointMarker:war exploded" />
+      <artifact name="PointMarker" />
     </artifacts-to-build>
   </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="添加打包输出">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/Util/Util.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Util/Util.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/mapObj.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapObj.jsp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/web/mapPoint.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapPoint.jsp" afterDir="false" />
-    </list>
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="修改 api 地址到服务器" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -245,7 +240,7 @@
       <workItem from="1659314017491" duration="2425000" />
       <workItem from="1659350025489" duration="983000" />
       <workItem from="1659452131983" duration="305000" />
-      <workItem from="1659484109952" duration="1523000" />
+      <workItem from="1659484109952" duration="1765000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>
@@ -443,7 +438,14 @@
       <option name="project" value="LOCAL" />
       <updated>1659484173513</updated>
     </task>
-    <option name="localTasksCounter" value="29" />
+    <task id="LOCAL-00029" summary="修改 api 地址到服务器">
+      <created>1659485698598</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1659485698598</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -467,7 +469,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="调整地图缩放" />
     <MESSAGE value="细节调整" />
     <MESSAGE value="坐标计算考虑 originx 和 originy&#10;jsp 增加坐标类方便展示，并更改相应方法&#10;增加方向角 yaw 计算（暂定）&#10;优化 map 列表到 map 的传值过程" />
     <MESSAGE value="坐标格式加入 type&#10;试图解决第一次加载缩放错误问题（理论上应该解决了但需要更多测试）" />
@@ -492,7 +493,8 @@
     <MESSAGE value="根据不同点更换颜色&#10;修正修改名称 bug&#10;更新 README" />
     <MESSAGE value="更新 README" />
     <MESSAGE value="添加打包输出" />
-    <option name="LAST_COMMIT_MESSAGE" value="添加打包输出" />
+    <MESSAGE value="修改 api 地址到服务器" />
+    <option name="LAST_COMMIT_MESSAGE" value="修改 api 地址到服务器" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

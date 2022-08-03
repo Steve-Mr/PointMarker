@@ -22,7 +22,7 @@
 
   <script type="text/javascript">
 
-    let SERVER_ADDRESS = "http://***REMOVED***:8080";
+    let SERVER_ADDRESS = "http://:8080";
     let URL_SENDOBJ = SERVER_ADDRESS + "/gs-robot/cmd/update_virtual_obstacles?";
 
     function init() {

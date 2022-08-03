@@ -22,7 +22,7 @@
 
     <script type="text/javascript">
 
-        let SERVER_ADDRESS = "http://***REMOVED***:8080";
+        let SERVER_ADDRESS = "http://:8080";
         let URL_SENDPOINT = SERVER_ADDRESS + "/gs-robot/cmd/add_position";
         let URL_DELETEPOINT = SERVER_ADDRESS + "/gs-robot/cmd/delete_position?";
 
