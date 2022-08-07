@@ -2,14 +2,20 @@
 <project version="4">
   <component name="ArtifactsWorkspaceSettings">
     <artifacts-to-build>
-      <artifact name="PointMarker" />
+      <artifact name="PointMarker:war exploded" />
     </artifacts-to-build>
   </component>
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="修改 api 地址到服务器" />
+    <list default="true" id="76d51707-cef1-4fe5-b1c5-f070f5580bca" name="Changes" comment="更新数据">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/Util/Util.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/Util/Util.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/servlet/ServletLoadMap.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/mapObj.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapObj.jsp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/web/mapPoint.jsp" beforeDir="false" afterPath="$PROJECT_DIR$/web/mapPoint.jsp" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -241,6 +247,7 @@
       <workItem from="1659350025489" duration="983000" />
       <workItem from="1659452131983" duration="305000" />
       <workItem from="1659484109952" duration="1765000" />
+      <workItem from="1659872342730" duration="4262000" />
     </task>
     <task id="LOCAL-00001" summary="init">
       <created>1656428963499</created>

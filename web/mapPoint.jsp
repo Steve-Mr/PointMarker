@@ -22,7 +22,7 @@
 
     <script type="text/javascript">
 
-        let SERVER_ADDRESS = "http://:8080";
+        let SERVER_ADDRESS = "http://192.168.123.113:8088";
         let URL_SENDPOINT = SERVER_ADDRESS + "/gs-robot/cmd/add_position";
         let URL_DELETEPOINT = SERVER_ADDRESS + "/gs-robot/cmd/delete_position?";
 
@@ -296,14 +296,14 @@
             function getDisplayCoord(pos){
                 this.pos = pos;
                 return {
-                    x : Math.round(this.pos.x - originX),
-                    y : Math.round(this.pos.y+bitmapH-originY)};
+                    x : Math.round(this.pos.x + originX),
+                    y : Math.round(this.pos.y+bitmapH+originY)};
             }
 
             function getOnStageCoord(obj){
                 return {
-                    x: obj.x + originX,
-                    y: obj.y + originY - bitmapH
+                    x: obj.x - originX,
+                    y: obj.y - originY - bitmapH
                 };
             }
 
@@ -337,8 +337,8 @@
 
                 pointsList.push({
                     angle: this.yaw,
-                    gridX: Math.round(this.x - originX),
-                    gridY: Math.round(this.y+bitmapH-originY),
+                    gridX: Math.round(this.x + originX),
+                    gridY: Math.round(this.y+bitmapH+originY),
                     mapName: this.mapName,
                     name: this.name,
                     type: this.type
@@ -549,7 +549,7 @@
                         let resJSON = JSON.parse(httpRequest.responseText);
                         if (resJSON.msg !== "successed"){
                             alert("delete point " + point.name + " error");
-                            addFailList.push(point);
+                            deleteFailList.push(point);
                         }
                     }
                 }
@@ -586,13 +586,19 @@
                         y: point.gridY,
                     })
                     let pos = {
-                        x: convertedPoint.x,
-                        y: convertedPoint.y,
+                        x: point.gridX = convertedPoint.x,
+                        y: point.gridY = convertedPoint.y,
                         z: 0
                     }
                     let pointType = point.type.toString()
                     let pointName = point.name.toString()
                     let pointAngle = point.angle.toString()
+                    console.log("===========")
+                    console.log(point.gridX)
+                    console.log(point.gridY)
+                    console.log("===========")
+                    console.log(pos.x)
+                    console.log(pos.y)
 
                     drawPoint(pos, pointType, pointName, pointAngle)
                 }

@@ -41,8 +41,10 @@ public class ServletLoadMap extends HttpServlet {
             request.setAttribute("url", Util.URL_MAP +map.getName());
             request.setAttribute("name", map.getName());
             request.setAttribute("resolution", map.getResolution());
-            request.setAttribute("originX", map.getOriginX()*map.getResolution());
-            request.setAttribute("originY", map.getOriginY()*map.getResolution());
+//            request.setAttribute("originX", map.getOriginX()*map.getResolution());
+//            request.setAttribute("originY", map.getOriginY()*map.getResolution());
+            request.setAttribute("originX", map.getOriginX());//*map.getResolution());
+            request.setAttribute("originY", map.getOriginY());//*map.getResolution());
 
             request.setAttribute("mapObj", mapObj.toString());
             request.setAttribute("prePoints", prePoints.toString());

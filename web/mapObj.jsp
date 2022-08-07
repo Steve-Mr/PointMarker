@@ -22,7 +22,7 @@
 
   <script type="text/javascript">
 
-    let SERVER_ADDRESS = "http://:8080";
+    let SERVER_ADDRESS = "http://192.168.123.113:8088";
     let URL_SENDOBJ = SERVER_ADDRESS + "/gs-robot/cmd/update_virtual_obstacles?";
 
     function init() {
@@ -444,15 +444,15 @@
       function getDisplayCoord(pos){
         this.pos = pos;
         return {
-          x : Math.round(this.pos.x - originX),
-          y : Math.round(this.pos.y+bitmapH-originY)};
+          x : Math.round(this.pos.x + originX),
+          y : Math.round(this.pos.y+bitmapH+originY)};
       }
 
       // 根据 json 中符合地图坐标系的坐标转换为可以在 stage 上添加的坐标
       function getOnStageCoord(obj){
         return {
-          x: obj.x + originX,
-          y: obj.y + originY - bitmapH
+          x: obj.x - originX,
+          y: obj.y - originY - bitmapH
         };
       }
 
