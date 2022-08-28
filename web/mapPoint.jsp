@@ -237,8 +237,8 @@
                                 movePoint = true;
                                 let pos = stage.globalToRos(event.stageX, event.stageY);
                                 polygon.movePoint(selectedPointIndex, pos);
-                                pointsList[selectedPointIndex].gridX = Math.round(pos.x - originX);
-                                pointsList[selectedPointIndex].gridY = Math.round(pos.y+bitmapH-originY);
+                                pointsList[selectedPointIndex].gridX = Math.round(pos.x + originX);
+                                pointsList[selectedPointIndex].gridY = Math.round(pos.y+bitmapH+originY);
                                 printCoords(pointsList, selectedPointIndex);
                                 let textBlock = stage.getChildByName("textBlock"+selectedPointIndex);
                                 textBlock.x = pos.x;
@@ -281,7 +281,7 @@
                                 createNo(pos, pointsList.length-1);
 
                                 printCoords(pointsList, pointsList.length-1);
-                                sendAddRequest(pointsList[pointsList.length-1])
+                                sendAddRequest(pointsList[pointsList.length-1]);
                             }
                             clickedPolygon = false;
                         }
